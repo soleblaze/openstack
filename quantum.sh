@@ -15,6 +15,15 @@ if [ -z "$mgtip" ]; then
     mgtip=$localip
 fi
 
+if [ -z "$quantumuser" ]; then
+    echo -e "Input Quantum Keystone User's Password: "
+    read quantumuser
+fi
+
+if [ -z "$quantumdb" ]; then
+    echo -e "Input Quantum MySQL Database's Password: "
+    read quantumdb
+fi
 
 if [ ! -e /etc/apt/sources.list.d/grizzly.list ]; then
     apt-get install ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
