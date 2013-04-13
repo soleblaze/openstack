@@ -244,7 +244,7 @@ api_paste_config=/etc/nova/api-paste.ini
 compute_scheduler_driver=nova.scheduler.simple.SimpleScheduler
 rabbit_host=$mgtip
 nova_url=http://$mgtip:8774/v1.1/
-sql_connection=mysql://novaUser:$novauser@$mgtip/nova
+sql_connection=mysql://novaUser:$novadb@$mgtip/nova
 root_helper=sudo nova-rootwrap /etc/nova/rootwrap.conf
 
 # Auth
