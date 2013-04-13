@@ -104,12 +104,6 @@ apt-get install -y rabbitmq-server
 
 apt-get install -y ntp
 
-
-# Enable IP Forwarding
-
-sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
-sysctl net.ipv4.ip_forward=1
-
 # Install keystone
 
 apt-get install -y keystone
