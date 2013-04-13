@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Disable Interactive apt-get in order to prevent mysql from prompting for a password
+export DEBIAN_FRONTEND=noninteractive
+
 # Get Setup Info from User
 
 echo -n "Input Management Interface: "
