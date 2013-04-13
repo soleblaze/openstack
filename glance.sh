@@ -22,7 +22,8 @@ if [ -z "$glancedb" ]; then
 fi
 
 
-# Setup grizzly repos if they aren't already here
+# Add repos for grizzly if they don't already exist
+
 if [ ! -e /etc/apt/sources.list.d/grizzly.list ]; then
     apt-get install ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
     echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
