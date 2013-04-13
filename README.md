@@ -1,4 +1,4 @@
-# openstack
+# OpenStack Installation Scripts
 
 These scripts are currently designed to deploy OpenStack on Ubuntu 12.04.  
   
