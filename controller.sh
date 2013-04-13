@@ -170,9 +170,8 @@ keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role
 # Setup Endpoints for Openstack
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_endpoints_basic.sh
 
-MYSQL_USER=keystoneUser
-MYSQL_HOST=$mgtip
-MYSQL_DATABASE=keystone
+export MYSQL_USER=keystoneUser
+export MYSQL_DATABASE=keystone
 
 ## Create Services
 
@@ -209,7 +208,7 @@ create_endpoint () {
 }
 
 for i in compute volume image object-store identity ec2 network; do
-  id=`mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$keystonedb" "$MYSQL_DATABASE" -ss -e "SELECT id FROM service WHERE type='"$i"';"` || exit 1
+  id=`mysql -u "$MYSQL_USER" -p"$keystonedb" "$MYSQL_DATABASE" -ss -e "SELECT id FROM service WHERE type='"$i"';"` || exit 1
   create_endpoint $i $id
 done
 
