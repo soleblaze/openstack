@@ -293,6 +293,10 @@ EOF
 
 nova-manage db sync
 
+## Restart nova services
+
+for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
+
 ## Install Novaclient python tools
 
 apt-get install -y python-novaclient
