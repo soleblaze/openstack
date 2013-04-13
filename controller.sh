@@ -20,27 +20,27 @@ read MYSQL_PASSWORD
 echo -n "Input Cinder IP [${mgtip}]: "
 read cinderip
 
-if [ -z "cinderip" ]; then
+if [ -z "$cinderip" ]; then
     cinderip=$mgtip
 fi
 
 echo -n "Input Glance IP [${mgtip}]: "
 read glanceip
 
-if [ -z "glanceip" ]; then
+if [ -z "$glanceip" ]; then
     glanceip=$mgtip
 fi
 echo -n "Input EC2 IP [${mgtip}]: "
 read ec2ip
 
-if [ -z "ec2ip" ]; then
+if [ -z "$ec2ip" ]; then
     ec2ip=$mgtip
 fi
 
 echo -n "Input Quantum IP [${mgtip}]: "
 read quantumip
 
-if [ -z "quantumip" ]; then
+if [ -z "$quantumip" ]; then
     quantumip=$mgtip
 fi
 
@@ -95,7 +95,7 @@ mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON cinder.* TO 'cinderser'@'%' ID
 
 # Install RabbitMQ
 
-apt-get install -u rabbitmq-server
+apt-get install -y rabbitmq-server
 
 # Install ntp
 
@@ -328,7 +328,7 @@ echo "export quantumdb=$quantumdb"
 echo "export novadb=$novadb"
 echo "export cinderdb=$cinderdb"
 echo "export novauser=$novauser"
-echo " export glanceuser=$glanceuser"
+echo "export glanceuser=$glanceuser"
 echo "export quantumuser=$quantumuser"
 echo "export cinderuser=$cinderuser"
 echo "export sharedsecret=$sharedsecret"
