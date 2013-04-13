@@ -66,7 +66,7 @@ cinderuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 
 sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 
-# Add repos for grizzly
+# Add repos for grizzly if they don't already exist
 
 if [ ! -e /etc/apt/sources.list.d/grizzly.list ]; then
     apt-get install -y ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
