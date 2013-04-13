@@ -96,7 +96,7 @@ mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE nova;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON nova.* TO 'novaUser'@'%' IDENTIFIED BY '${novadb}';"
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE cinder;"
-mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON cinder.* TO 'cinderser'@'%' IDENTIFIED BY '${cinderdb}';"
+mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY '${cinderdb}';"
 
 # Install RabbitMQ
 
