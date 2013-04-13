@@ -68,9 +68,11 @@ sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 
 # Add repos for grizzly
 
-apt-get install -y ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
-echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
-apt-get update
+if [ ! -e /etc/apt/sources.list.d/grizzly.list ]; then
+    apt-get install -y ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
+    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
+    apt-get update
+fi
 
 # Install mysql
 
