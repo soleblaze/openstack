@@ -11,6 +11,11 @@ This script is designed to deploy the initial controller node.  This includes in
 This script will create a /root/.novarc file that you can source to import the credentials in order to run tools that talk to nova (such as nova and nova-manage)
 This script will also output a set of bash commands that can be used to import passwords and IPs to be used with the other installation scripts.
 
+## quantum.sh - Work in Progress
+
+This script is designed to deploy the quantum server.  It can be deployed on its own server or on the controller node.
+
 
 [msknibilel]:https://github.com/mseknibilel/
 [grizzlyguide]:ttps://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide
+
