@@ -15,6 +15,10 @@ This script will also output a set of bash commands that can be used to import p
 
 This script is designed to deploy the quantum server.  It can be deployed on its own server or on the controller node.
 
+## glance.sh - Work in Progress
+
+This script is designed to deploy the glance server.  If you do not have a separate data network then you should put the management network interface for the data interface.
+
 
 [msknibilel]:https://github.com/mseknibilel/
 [grizzlyguide]:ttps://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide
