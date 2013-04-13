@@ -307,7 +307,8 @@ sed -i -e 's/COMPRESS_OFFLINE\ =\ True/COMPRESS_OFFLINE\ =\ False/' /etc/opensta
 
 # Restart apache2 and memcached
 
-service apache2 restartservice memcached restart
+service apache2 restart
+service memcached restart
 
 # Echo out passwords for future Setup
 
