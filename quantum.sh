@@ -8,8 +8,10 @@ echo -n "Input Public Interface: "
 read pubiface
 pubip=$(ip addr show $pubiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
-echo -n "Input Controller IP [$localip]: "
-read mgtip
+if [ -z "$mgtip" ]; then
+    echo -n "Input Controller IP [$localip]: "
+    read mgtip
+fi
 
 if [ -z "$mgtip" ]; then
     mgtip=$localip
