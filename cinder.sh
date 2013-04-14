@@ -52,6 +52,10 @@ sed -i -e "s/^service_host.*/service_host\ =\ $localip/" /etc/cinder/api-paste.i
 
 echo "sql_connection = mysql://cinderUser:$cinderdb@$mgtip/cinder" >> /etc/cinder/cinder.conf
 
+# Lock Cinder down to the data port
+
+echo "osapi_volume_listen=$localip" >> /etc/cinder/cinder.conf
+
 # Update iSCSI Type for Cidner
 
 sed -i -e "s/^iscsi_helper.*/iscsi_helper\ =\ ietadm/" /etc/cinder/cinder.conf
@@ -59,6 +63,7 @@ sed -i -e "s/^iscsi_helper.*/iscsi_helper\ =\ ietadm/" /etc/cinder/cinder.conf
 # Sync Cinder
 
 cinder-manage db sync
+
 
 # Restart Cinder
 
