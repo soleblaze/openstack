@@ -61,11 +61,6 @@ echo "admin_password = $glanceuser" >> /etc/glance/glance-registry-paste.ini
 sed -i -e "s|^sql_connection.*|sql_connection\ =\ mysql://glanceUser:$glancedb@$mgtip/glance|" /etc/glance/glance-registry.conf
 sed -i -e "s/^#flavor=/flavor\ =\ keystone/" /etc/glance/glance-registry.conf
 
-## Lock down Glance to Data Network
-
-sed -i -e "s/^bind_host.*/bind_host\ =\ $localip/" /etc/glance/glance-api.conf
-sed -i -e "s/^bind_host.*/bind_host\ =\ $localip/" /etc/glance/glance-registry.conf
-
 # Restart glance
 
 service glance-api restart
