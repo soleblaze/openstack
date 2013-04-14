@@ -296,7 +296,6 @@ volume_api_class=nova.volume.cinder.API
 osapi_volume_listen_port=5900
 
 # Lock Down Services to the Management Network #
-osapi_volume_listen="$mgtip"
 osapi_compute_listen="$mgtip"
 EOF
 
