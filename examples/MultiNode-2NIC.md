@@ -24,7 +24,7 @@ Add management interface to /etc/network/interfaces
 
 	service networking restart
 
-	wget https://github.com/soleblaze/openstack/raw/master/controller.sh
+	wget https://raw.github.com/soleblaze/openstack/master/installation-scripts/controller.sh
 	
 	chmod +x controller.sh
 	
@@ -43,7 +43,7 @@ Add management interface to /etc/network/interfaces
 
 copy and paste export lists for Cinder, Glance, and Quantum
 
-	wget https://github.com/soleblaze/openstack/raw/master/glance.sh
+	wget https://raw.github.com/soleblaze/openstack/master/installation-scripts/glance.sh
 
 	chmod +x glance.sh
 	
@@ -53,7 +53,7 @@ copy and paste export lists for Cinder, Glance, and Quantum
 	Input Controller IP [172.16.0.2]:
 	Reading package lists...
 
-	wget https://github.com/soleblaze/openstack/raw/master/cinder.sh
+	wget https://raw.github.com/soleblaze/openstack/master/installation-scripts/cinder.sh
 	
 	chmod +x cinder.sh
 
@@ -63,7 +63,7 @@ copy and paste export lists for Cinder, Glance, and Quantum
 	Input Controller IP [172.16.0.2]:
 	Reading package lists...
 	
-	wget https://github.com/soleblaze/openstack/raw/master/quantum.sh
+	wget https://raw.github.com/soleblaze/openstack/master/installation-scripts/quantum.sh
 	
 	chmod +x quantum.sh
 	
