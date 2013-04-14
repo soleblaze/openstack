@@ -28,7 +28,7 @@ You can also manually fix it by running:
 
 This script is designed to deploy the Glance server.  If you do not have a separate data network then you should put the management network interface for the data interface.
 
-## cinder.sh - Work in Progress
+## cinder.sh
 
 This script is designed to deploy the Cinder server.  If you do not have a separate data network then you should put the management network interface for the data interface. You will need to create a LVM2 volume group named cinder-volumes in order to use this.
 
