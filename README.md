@@ -26,7 +26,7 @@ This script is designed to deploy the Quantum server.  It can be deployed on its
   
 You can also manually fix it by running:  
   
-    ifconfig ${management interface} 0.0.0.0
+    ifconfig ${public interface} 0.0.0.0
     route add default gw ${gateway}
 
 ## glance.sh
