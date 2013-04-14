@@ -106,10 +106,6 @@ sed -i -e 's/#\ \(nova_metadata_port.*\)/\1/'  /etc/quantum/metadata_agent.ini
 
 sed -i -e "s/#\ use_namespaces.*/use_namespaces\ =\ True/" /etc/quantum/dhcp_agent.ini
 
-# Lock quantum down to Quantum Network
-
-sed -i -e "s/^bind_host.*/bind_host\ =\ $localip/" /etc/quantum/quantum.conf
-
 # Lock down dnsmasq to Quantum Network Interface
 
 sed -i -e "s/^#interface=.*/interface=$mgtiface/" /etc/dnsmasq.conf
