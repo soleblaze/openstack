@@ -136,7 +136,7 @@ if [ "$virt_type" = "kvm" ]; then
 "/dev/random", "/dev/urandom",\
 "/dev/ptmx", "/dev/kvm", "/dev/kqemu",\
 "/dev/rtc", "/dev/hpet","/dev/net/tun"\
-]"\
+]\
 #cgroup_device_acl = [\n|' /etc/libvirt/qemu.conf
 
     # Delete default virtual bridge
@@ -222,6 +222,10 @@ compute_driver=libvirt.LibvirtDriver
 volume_api_class=nova.volume.cinder.API
 osapi_volume_listen_port=5900
 EOF
+
+    # Restart libvirt
+
+    service libvirt-bin restart
 
     # Restart Nova-Compute
 
