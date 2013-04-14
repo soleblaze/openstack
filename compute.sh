@@ -29,8 +29,6 @@
 # Metadata Server's Shared Secret
 # sharedsecret="helloOpenStack"
 
-
-
 # Management Network interface
 # mgtiface=eth1
 
