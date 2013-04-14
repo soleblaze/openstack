@@ -19,7 +19,10 @@ This script is designed to deploy the Quantum server.  It can be deployed on its
   
 ./quantum.sh && shutdown -r now  
   
-You can also manually fix it by running ifconfig ${management interface} 0.0.0.0 and route add default gw ${gateway}
+You can also manually fix it by running:  
+  
+    ifconfig ${management interface} 0.0.0.0
+    route add default gw ${gateway}
 
 ## glance.sh - Work in Progress
 
