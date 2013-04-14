@@ -15,12 +15,12 @@ ssh into controller
 
 Add management interface to /etc/network/interfaces
 
-	auto eth1
-	iface eth1 inet static
-	        address 172.16.0.2
-	        netmask 255.255.255.0
+auto eth1
+iface eth1 inet static
+  address 172.16.0.2
+  netmask 255.255.255.0
 
-service networking restart
+	service networking restart
 
 	wget https://github.com/soleblaze/openstack/raw/master/controller.sh
 	
