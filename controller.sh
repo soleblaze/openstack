@@ -174,6 +174,7 @@ keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role
 
 export MYSQL_USER=keystoneUser
 export MYSQL_DATABASE=keystone
+export KEYSTONE_REGION=RegionOne
 
 ## Create Services
 
