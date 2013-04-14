@@ -5,6 +5,8 @@ These scripts are designed to deploy Grizzly OpenStack on Ubuntu 12.04.
 These scripts are heavily influenced by the Folsom and Grizzly documentation created by [mseknibilel][msknibilel].  
 You can find msknibilel's Grizzly install guide [here][grizzlyguide]
 
+**Note: These scripts do not currently setup SSL and therefore are not suitable for production environments.**
+
 ## controller.sh - Work in Progress
 
 This script is designed to deploy the initial controller node.  This includes installing and setting up mysql, rabbitmq, keystone, nova (minus compute), and horizon.
