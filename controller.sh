@@ -161,7 +161,7 @@ MEMBER_ROLE=$(get_id keystone role-create --name=Member)
 NOVA_USER=$(get_id keystone user-create --name=nova --pass="$novauser" --tenant-id $SERVICE_TENANT --email=nova@domain.com)
 keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NOVA_USER --role-id $ADMIN_ROLE
 
-GLANCE_USER=$(get_id keystone user-create --name=glance --pass="glanceuser" --tenant-id $SERVICE_TENANT --email=glance@domain.com)
+GLANCE_USER=$(get_id keystone user-create --name=glance --pass="$glanceuser" --tenant-id $SERVICE_TENANT --email=glance@domain.com)
 keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $GLANCE_USER --role-id $ADMIN_ROLE
 
 QUANTUM_USER=$(get_id keystone user-create --name=quantum --pass="$quantumuser" --tenant-id $SERVICE_TENANT --email=quantum@domain.com)
