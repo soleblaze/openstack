@@ -4,7 +4,7 @@ echo -n "Input Data Interface: "
 read dataiface
 localip=$(ip addr show $dataiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
-echo -e "Input Controller IP [$localip]: "
+echo -n "Input Controller IP [$localip]: "
 read mgtip
 
 if [ -z "$mgtip" ]; then
