@@ -1,6 +1,6 @@
 # Grizzly OpenStack Installation Scripts
 
-These scripts are designed to deploy Grizzly OpenStack on Ubuntu 12.04.  
+These scripts are designed to deploy Grizzly OpenStack on Ubuntu 12.04.  They are for the initial installation of OpenStack.  They do not cover the creation of networks, projects, users, glance images, etc.  This will be done in the future in a how-to section.
   
 These scripts are heavily influenced by the Folsom and Grizzly documentation created by [mseknibilel][msknibilel].  
 You can find msknibilel's Grizzly install guide [here][grizzlyguide].
@@ -37,9 +37,23 @@ This script is designed to deploy the Glance server.  If you do not have a separ
 
 This script is designed to deploy the Cinder server.  If you do not have a separate data network then you should put the management network interface for the data interface. You will need to create a LVM2 volume group named cinder-volumes in order to use this.
 
-## compute.sh -- Work in Progress
+## compute.sh
 
 This script is designed to deploy nova compute servers.  The controller.sh should spit out most of the variables needed for this.  If you are deploying this to multiple machines than I highly suggest hard coding the variables into the script and copying that to each compute server for deployment.
+
+
+### Todo
+
+* Give more Examples
+* Add Swift support to controller.sh
+* Create swift.sh
+* Write a guide on creating floating IP address space
+* Write a guide on creating networks
+* Write a guide on creating users and projects
+* Create a script to create multiple l3-agents for routing
+* Create a script to download and add some basic images
+* Create a guide to adding images
+* Create a guide to creating images
 
 [MultiNode-2NIC]:https://github.com/soleblaze/openstack/blob/master/examples/MultiNode-2NIC.md
 [msknibilel]:https://github.com/mseknibilel/
