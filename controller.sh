@@ -318,7 +318,8 @@ service memcached restart
 
 # Echo out passwords for future Setup
 
-echo "These are the variables needed for the rest of the installation:"
+echo "These are the variables needed for the rest of the installation"
+echo "You should save them in a safe place."
 echo ""
 echo "export mgtip=$mgtip"
 echo "export cinderip=$cinderip"
