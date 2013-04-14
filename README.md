@@ -42,6 +42,7 @@ This script is designed to deploy the Cinder server.  If you do not have a separ
 This script is designed to deploy nova compute servers.  The controller.sh should spit out most of the variables needed for this.  If you are deploying this to multiple machines than I highly suggest hard coding the variables into the script and copying that to each compute server for deployment.
 
 
+---
 ### Todo
 
 * Give more Examples
