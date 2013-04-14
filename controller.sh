@@ -323,6 +323,7 @@ service memcached restart
 echo "This information should be kept in a safe place:"
 echo ""
 echo "Controller Server IP: $mgtip"
+echo "Public IP: $pubip"
 echo "Cinder Server IP: $cinderip"
 echo "Glance Server IP: $glanceip"
 echo "EC2 Server IP: $ec2ip"
