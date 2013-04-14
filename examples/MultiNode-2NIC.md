@@ -2,7 +2,7 @@
 
 This example has the following hardware:
 
-1 Machine running the Controller, Cinder, Glance, and Quantum node
+1 Machine running the Controller, Cinder, Glance, and Quantum node  
 3 Machines running the Compute node
 
 ## Installing Controller/Cinder/Glance/Quantum Node
