@@ -115,6 +115,10 @@ apt-get install -y keystone
 sed -i -e "s|^connection.*|connection\ =\ mysql://keystoneUser:${keystonedb}@${mgtip}/keystone|" /etc/keystone/keystone.conf
 sed -i -e 's/^#token_format.*/token_format\ =\ UUID/' /etc/keystone/keystone.conf
 
+# Bind keystone to the management interface
+
+sed -i -e "s/#\ bind_host.*/bind_host\ =\ $mgtip/" /etc/keystone/keystone.conf
+
 # Restart Keystone and Sync the service
 
 service keystone restart
@@ -290,6 +294,10 @@ compute_driver=libvirt.LibvirtDriver
 # Cinder #
 volume_api_class=nova.volume.cinder.API
 osapi_volume_listen_port=5900
+
+# Lock Down Services to the Management Network #
+osapi_volume_listen="$mgtip"
+osapi_compute_listen="$mgtip"
 EOF
 
 ## Sync nova database
