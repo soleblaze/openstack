@@ -22,7 +22,7 @@ This script will also output a set of bash commands that can be used to import p
 
 This script is designed to deploy the Quantum server.  It can be deployed on its own server or on the controller node.  This script tends to kill network connections, which should come up properly after a reboot.  If you're running this from an ssh connection I suggest rebooting after the script by running this in screen:  
   
-./quantum.sh && shutdown -r now  
+    ./quantum.sh && shutdown -r now  
   
 You can also manually fix it by running:  
   
