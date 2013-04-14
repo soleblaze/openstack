@@ -3,7 +3,7 @@
 These scripts are designed to deploy Grizzly OpenStack on Ubuntu 12.04.  
   
 These scripts are heavily influenced by the Folsom and Grizzly documentation created by [mseknibilel][msknibilel].  
-You can find msknibilel's Grizzly install guide [here][grizzlyguide]
+You can find msknibilel's Grizzly install guide [here][grizzlyguide].
 
 **Note: These scripts do not currently setup SSL or HA and therefore are not suitable for production environments.**
 
