@@ -24,7 +24,7 @@ You can also manually fix it by running:
     ifconfig ${management interface} 0.0.0.0
     route add default gw ${gateway}
 
-## glance.sh - Work in Progress
+## glance.sh
 
 This script is designed to deploy the Glance server.  If you do not have a separate data network then you should put the management network interface for the data interface.
 
