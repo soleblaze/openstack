@@ -1,14 +1,14 @@
 #!/bin/bash
 
-echo -e "Input Quantum Network Interface: "
+echo -n "Input Quantum Network Interface: "
 read mgtiface
 localip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
-echo -e "Input Public Interface: "
+echo -n "Input Public Interface: "
 read pubiface
 pubip=$(ip addr show $pubiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
-echo -e "Input Controller IP [$localip]: "
+echo -n "Input Controller IP [$localip]: "
 read mgtip
 
 if [ -z "$mgtip" ]; then
