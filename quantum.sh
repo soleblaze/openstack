@@ -60,15 +60,6 @@ echo "iface $pubiface inet manual" >> /etc/network/interfaces
 echo -e "\tup ifconfig \$IFACE up" >> /etc/network/interfaces
 echo -e "\tdown ifconfig \$IFACE down" >> /etc/network/interfaces
 
-# Setup External VM access
-
-ovs-vsctl br-set-external-id br-ext bridge-id br-ext
-ovs-vsctl add-port br-ext $pubiface
-
-# Restart networking
-
-service networking restart
-
 # Enable IP Forwarding
 
 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
@@ -129,9 +120,18 @@ echo "" >> /etc/sudoers
 echo "# This is to fix errors that quantum generates" >> /etc/sudoers
 echo "quantum ALL = NOPASSWD: /sbin/ip" >> /etc/sudoers
 
-## Restart quantum Services
+# Restart quantum Services
 
 for service in quantum-dhcp-agent quantum-l3-agent quantum-metadata-agent quantum-plugin-openvswitch-agent quantum-server dnsmasq; do service $service restart; done
+
+# Setup External VM access
+
+ovs-vsctl br-set-external-id br-ext bridge-id br-ext
+ovs-vsctl add-port br-ext $pubiface
+
+# Restart networking
+
+service networking restart
 
 # Report Sucess
 
