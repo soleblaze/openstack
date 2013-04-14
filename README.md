@@ -37,6 +37,9 @@ This script is designed to deploy the Glance server.  If you do not have a separ
 
 This script is designed to deploy the Cinder server.  If you do not have a separate data network then you should put the management network interface for the data interface. You will need to create a LVM2 volume group named cinder-volumes in order to use this.
 
+## compute.sh
+
+This script is designed to deploy nova compute servers.  The controller.sh should spit out most of the variables needed for this.  If you are deploying this to multiple machines than I highly suggest hard coding the variables into the script and copying that to each compute server for deployment.
 
 [MultiNode-2NIC]:https://github.com/soleblaze/openstack/blob/master/examples/MultiNode-2NIC.md
 [msknibilel]:https://github.com/mseknibilel/
