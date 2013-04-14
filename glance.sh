@@ -61,6 +61,11 @@ echo "admin_password = $glanceuser" >> /etc/glance/glance-registry-paste.ini
 sed -i -e "s|^sql_connection.*|sql_connection\ =\ mysql://glanceUser:$glancedb@$mgtip/glance|" /etc/glance/glance-registry.conf
 sed -i -e "s/^#flavor=/flavor\ =\ keystone/" /etc/glance/glance-registry.conf
 
+# Setup glance api database access
+
+sed -i -e "s|^sql_connection.*|sql_connection\ =\ mysql://glanceUser:$glancedb@$mgtip/glance|" /etc/glance/glance-api.conf
+sed -i -e "s/^#flavor=/flavor\ =\ keystone/" /etc/glance/glance-api.conf
+
 # Setup authtoken for glance-api
 
 sed -i -e "s/^auth_host.*/auth_host\ =\ $mgtip/" /etc/glance/glance-api.conf
