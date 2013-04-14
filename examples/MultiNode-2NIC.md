@@ -3,7 +3,7 @@
 This example has the following hardware:
 
 1 Machine running the Controller, Cinder, Glance, and Quantum node
-1 Machine running the Compute node
+3 Machines running the Compute node
 
 ## Installing Controller/Cinder/Glance/Quantum Node
 
@@ -41,7 +41,7 @@ Add management interface to /etc/network/interfaces
 	Reading package lists...
 	Building dependency tree...
 
-copy and paste the huge export list
+copy and paste export lists for Cinder, Glance, and Quantum
 
 	wget https://github.com/soleblaze/openstack/raw/master/glance.sh
 
@@ -74,3 +74,8 @@ copy and paste the huge export list
 	Input Public Interface: eth0
 	Input Controller IP [172.16.0.2]:
 	Reading package lists...
+
+## Installing a Compute Server
+
+Since this is being deployed to 3 machines the compute.sh file is downloaded locally.  The variables are then hard coded into the script.  The script is then scp'd onto each compute server and ran.
+
