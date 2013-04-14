@@ -7,6 +7,11 @@ You can find msknibilel's Grizzly install guide [here][grizzlyguide]
 
 **Note: These scripts do not currently setup SSL or HA and therefore are not suitable for production environments.**
 
+
+## Examples
+
+[Multi-Node 2 NIC][MultiNode-2NIC] is an example of using these scripts to setup a cluster where one node is running Controller, Cinder, Glance, and Quantum and the other ndoes are running Compute.  Each node has 2 NICs.
+
 ## controller.sh
 
 This script is designed to deploy the initial controller node.  This includes installing and setting up mysql, rabbitmq, keystone, nova (minus compute), and horizon.
@@ -32,6 +37,8 @@ This script is designed to deploy the Glance server.  If you do not have a separ
 
 This script is designed to deploy the Cinder server.  If you do not have a separate data network then you should put the management network interface for the data interface. You will need to create a LVM2 volume group named cinder-volumes in order to use this.
 
+
+[MultiNode-2NIC]:https://github.com/soleblaze/openstack/blob/master/examples/MultiNode-2NIC.md
 [msknibilel]:https://github.com/mseknibilel/
 [grizzlyguide]:ttps://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide
 
