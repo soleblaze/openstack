@@ -40,5 +40,5 @@ This script is designed to deploy the Cinder server.  If you do not have a separ
 
 [MultiNode-2NIC]:https://github.com/soleblaze/openstack/blob/master/examples/MultiNode-2NIC.md
 [msknibilel]:https://github.com/mseknibilel/
-[grizzlyguide]:ttps://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide
+[grizzlyguide]:https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide
 
