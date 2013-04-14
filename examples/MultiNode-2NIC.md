@@ -15,10 +15,12 @@ ssh into controller
 
 Add management interface to /etc/network/interfaces
 
-auto eth1  
-iface eth1 inet static  
-  address 172.16.0.2  
-  netmask 255.255.255.0  
+	auto eth1
+	iface eth1 inet static
+ 		address 172.16.0.2
+  		netmask 255.255.255.0
+  		
+ Run the following commands with the options shown:
 
 	service networking restart
 
