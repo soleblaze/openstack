@@ -88,7 +88,7 @@ Add management interface to /etc/network/interfaces
  		address 172.16.0.3
   		netmask 255.255.255.0
   		
-service networking restart is ran
+"service networking restart" is ran
 
 Since this is being deployed to 3 machines the compute.sh file is downloaded locally.  The variables are then hard coded into the script.  The modified script is then scp'd onto each compute server and ran.
 
