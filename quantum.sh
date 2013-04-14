@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -e "Input Management Interface: "
+echo -e "Input Quantum Network Interface: "
 read mgtiface
 localip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
@@ -114,6 +114,14 @@ sed -i -e 's/#\ \(nova_metadata_port.*\)/\1/'  /etc/quantum/metadata_agent.ini
 # Enable namespaces with the dhcp agent
 
 sed -i -e "s/#\ use_namespaces.*/use_namespaces\ =\ True/" /etc/quantum/dhcp_agent.ini
+
+# Lock quantum down to Quantum Network
+
+sed -i -e "s/^bind_host.*/bind_host\ =\ $localip/" /etc/quantum/quantum.conf
+
+# Lock down dnsmasq to Quantum Network Interface
+
+sed -i -e "s/^#interface=.*/interface=$mgtiface/" /etc/dnsmasq.conf
 
 # Give quantum sudo access for running ip in order to fix some errors that show in the logs
 
