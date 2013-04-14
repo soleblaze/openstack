@@ -117,7 +117,7 @@ sysctl net.ipv4.ip_forward=1
 
 # If KVM is used, check to verify that hardware support is turned on.
 
-if [ $"virt_type" = "kvm" ]; then
+if [ "$virt_type" = "kvm" ]; then
     apt-get install cpu-checker
 
     if [ -z "$(kvm-ok | grep 'KVM acceleration can be used')" ]; then
