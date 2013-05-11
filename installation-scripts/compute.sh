@@ -193,7 +193,7 @@ image_service=nova.image.glance.GlanceImageService
 novnc_enabled=true
 novncproxy_base_url=http://$pubip:6080/vnc_auto.html
 novncproxy_port=6080
-vncserver_proxyclient_address=$controllerip
+vncserver_proxyclient_address=$localip
 vncserver_listen=0.0.0.0
 
 # Network settings
