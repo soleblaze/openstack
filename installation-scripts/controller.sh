@@ -33,44 +33,43 @@ read glanceip
 if [ -z "$glanceip" ]; then
     glanceip=$mgtip
 fi
-echo -n "Input EC2 IP [${mgtip}]: "
-read ec2ip
 
-if [ -z "$ec2ip" ]; then
-    ec2ip=$mgtip
-fi
+echo -n "Input Neutron IP [${mgtip}]: "
+read neutronip
 
-echo -n "Input Quantum IP [${mgtip}]: "
-read quantumip
-
-if [ -z "$quantumip" ]; then
-    quantumip=$mgtip
+if [ -z "$neutronip" ]; then
+    neutronip=$mgtip
 fi
 
 # Generate Random passwords for database accounts
 
 keystonedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-glancedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-quantumdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-novadb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+ceilometerdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 cinderdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+glancedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+heatdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+neutrondb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+novadb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 
 # Generate Random passwords for keystone accounts
 
-novauser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-glanceuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-quantumuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+ceilometeruser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 cinderuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+glanceuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+heatuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+neutronuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+novauser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+neutronuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 
-# Generate Shared Secret for Quantum Metadata SErver
+# Generate Shared Secret for Neutron Metadata Server
 
 sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 
 # Add repos for grizzly if they don't already exist
 
-if [ ! -e /etc/apt/sources.list.d/grizzly.list ]; then
-    apt-get install -y ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
-    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
+if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
+    apt-get install -y ubuntu-cloud-keyring
+    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
     apt-get update
 fi
 
@@ -89,14 +88,20 @@ mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON keystone.* TO 'keystoneUser'@'
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE glance;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON glance.* TO 'glanceUser'@'%' IDENTIFIED BY '${glancedb}';"
 
-mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE quantum;"
-mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON quantum.* TO 'quantumUser'@'%' IDENTIFIED BY '${quantumdb}';"
+mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE neutron;"
+mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON neutron.* TO 'neutronUser'@'%' IDENTIFIED BY '${neutrondb}';"
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE nova;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON nova.* TO 'novaUser'@'%' IDENTIFIED BY '${novadb}';"
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE cinder;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY '${cinderdb}';"
+
+mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE ceilometer;"
+mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON ceilometer* TO 'ceilometerUser'@'%' IDENTIFIED BY '${ceilometerdb}';"
+
+mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE heat;"
+mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON heat* TO 'heatUser'@'%' IDENTIFIED BY '${heatdb}';"
 
 # Install RabbitMQ
 
@@ -164,11 +169,17 @@ keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NOVA_USER --role-i
 GLANCE_USER=$(get_id keystone user-create --name=glance --pass="$glanceuser" --tenant-id $SERVICE_TENANT --email=glance@domain.com)
 keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $GLANCE_USER --role-id $ADMIN_ROLE
 
-QUANTUM_USER=$(get_id keystone user-create --name=quantum --pass="$quantumuser" --tenant-id $SERVICE_TENANT --email=quantum@domain.com)
-keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $QUANTUM_USER --role-id $ADMIN_ROLE
+NEUTRON_USER=$(get_id keystone user-create --name=neutron --pass="$neutronuser" --tenant-id $SERVICE_TENANT --email=neutron@domain.com)
+keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NEUTRON_USER --role-id $ADMIN_ROLE
 
 CINDER_USER=$(get_id keystone user-create --name=cinder --pass="$cinderuser" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
 keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role-id $ADMIN_ROLE
+
+HEAT_USER=$(get_id keystone user-create --name=heat --pass="$heatuser" --tenant-id $SERVICE_TENANT --email=heat@domain.com)
+keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $HEAT_USER --role-id $ADMIN_ROLE
+Vjj
+CEILOMETER_USER=$(get_id keystone user-create --name=ceilometer --pass="$ceilometeruser" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
+keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CEILOMETER_USER --role-id $ADMIN_ROLE
 
 # Setup Endpoints for Openstack
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_endpoints_basic.sh
@@ -179,22 +190,29 @@ export KEYSTONE_REGION=RegionOne
 
 ## Create Services
 
-keystone service-create --name nova --type compute --description 'OpenStack Compute Service'
-keystone service-create --name cinder --type volume --description 'OpenStack Volume Service'
+keystone service-create --name nova --type compute --description 'OpenStack Compute'
+keystone service-create --name cinder --type volume --description 'OpenStack Block Storage'
+keystone service-create --name cinderv2 --type volumev2 --description 'OpenStack Block Storage'
 keystone service-create --name glance --type image --description 'OpenStack Image Service'
 keystone service-create --name keystone --type identity --description 'OpenStack Identity'
-keystone service-create --name ec2 --type ec2 --description 'OpenStack EC2 service'
-keystone service-create --name quantum --type network --description 'OpenStack Networking service'
+keystone service-create --name neutron --type network --description 'OpenStack Networking'
+keystone service-create --name heat --type orchestration --description 'Orchestration'
+keystone service-create --name heat-cfn --type cloudformation --description 'Orchestration'
+keystone service-create --name ceilometer --type metering --description 'Telemetry'
+keystone service-create --name keystone --type identity --description 'OpenStack Identity'
 
 ## Create Endpoints
 
 create_endpoint () {
   case $1 in
     compute)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':8774/v2/$(tenant_id)s' --adminurl 'http://'"$mgtip"':8774/v2/$(tenant_id)s' --internalurl 'http://'"$mgtip"':8774/v2/$(tenant_id)s'
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s'
     ;;
     volume)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$cinderip"':8776/v1/$(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v1/$(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v1/$(tenant_id)s'
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s'
+    ;;
+    volumev2)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --adminurl 'http://'"%cinderip"':8776/v2/%(tenant_id)s' --internalurl 'http://'"%cinderip"':8776/v2/%(tenant_id)s'
     ;;
     image)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$glanceip"':9292/v2' --adminurl 'http://'"$glanceip"':9292/v2' --internalurl 'http://'"$glanceip"':9292/v2'
@@ -202,16 +220,22 @@ create_endpoint () {
     identity)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':5000/v2.0' --adminurl 'http://'"$mgtip"':35357/v2.0' --internalurl 'http://'"$mgtip"':5000/v2.0'
     ;;
-    ec2)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$ec2ip"':8773/services/Cloud' --adminurl 'http://'"$ec2ip"':8773/services/Admin' --internalurl 'http://'"$ec2ip"':8773/services/Cloud'
+    orchestration)
+        keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"'::8004/v1/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8004/v1/%(tenant_id)' --internalurl 'http://'"$mgtip"'::8004/v1/%(tenant_id)'
+    ;;
+    cloudformation)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':8000/v1' --adminurl 'http://'"$mgtip"'8000/v1' --internalurl 'http://'"$mgtip"':800/v1'
+    ;;
+    metering)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':8777' --adminurl 'http://'"$mgtip"':8777' --internalurl 'http://'"$mgtip"':8777'
     ;;
     network)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$quantumip"':9696/' --adminurl 'http://'"$quantumip"':9696/' --internalurl 'http://'"$quantumip"':9696/'
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$neutronip"':9696/' --adminurl 'http://'"$neutronip"':9696/' --internalurl 'http://'"$neutronip"':9696/'
     ;;
   esac
 }
 
-for i in compute volume image object-store identity ec2 network; do
+for i in compute volume volumev2 image orchestration cloudformation metering identity network; do
   id=`mysql -h $mgtip -u "$MYSQL_USER" -p"$keystonedb" "$MYSQL_DATABASE" -ss -e "SELECT id FROM service WHERE type='"$i"';"` || exit 1
   create_endpoint $i $id
 done
@@ -222,6 +246,8 @@ echo export OS_TENANT_NAME=admin > /root/.novarc
 echo export OS_USERNAME=admin >> /root/.novarc
 echo export OS_PASSWORD="$ADMIN_PASSWORD" >> /root/.novarc
 echo export OS_AUTH_URL="http://$mgtip:5000/v2.0/" >> /root/.novarc
+
+# TODO: Have not updated past here for juno
 
 # Install nova
 
@@ -268,12 +294,12 @@ vncserver_listen=0.0.0.0
 
 # Network settings
 network_api_class=nova.network.quantumv2.api.API
-quantum_url=http://$quantumip:9696
+quantum_url=http://$neutronip:9696
 quantum_auth_strategy=keystone
 quantum_admin_tenant_name=service
 quantum_admin_username=quantum
 quantum_admin_password=$quantumuser
-quantum_admin_auth_url=http://$quantumip:35357/v2.0
+quantum_admin_auth_url=http://$neutronip:35357/v2.0
 libvirt_vif_driver=nova.virt.libvirt.vif.LibvirtHybridOVSBridgeDriver
 linuxnet_interface_driver=nova.network.linux_net.LinuxOVSInterfaceDriver
 firewall_driver=nova.virt.libvirt.firewall.IptablesFirewallDriver
@@ -281,8 +307,8 @@ firewall_driver=nova.virt.libvirt.firewall.IptablesFirewallDriver
 #Metadata
 service_quantum_metadata_proxy = True
 quantum_metadata_proxy_shared_secret = $sharedsecret
-metadata_host = $quantumip
-metadata_listen = $quantumip
+metadata_host = $neutronip
+metadata_listen = $neutronip
 metadata_listen_port = 8775
 
 # Compute #
@@ -326,21 +352,20 @@ echo "Controller Server IP: $mgtip"
 echo "Public IP: $pubip"
 echo "Cinder Server IP: $cinderip"
 echo "Glance Server IP: $glanceip"
-echo "EC2 Server IP: $ec2ip"
-echo "Quantum Server IP: $quantumip"
+echo "Neutron Server IP: $neutronip"
 echo ""
 echo "Cinder MySQL Database Password: $cinderdb"
 echo "Glance MySQL Database Password: $glancedb"
 echo "Nova MySQL Database Password: $novadb"
 echo "Keystone MySQL Database Password: $keystonedb"
-echo "Quantum MySQL Database Password: $quantumdb"
+echo "Neutron MySQL Database Password: $neutrondb"
 echo ""
 echo "Cinder Keystone User Password: $cinderuser"
 echo "Glance Keystone User Password: $glanceuser"
 echo "Nova Keystone User Password: $novauser"
-echo "Quantum Keystone User Password: $quantumuser"
+echo "Neutron Keystone User Password: $neutronuser"
 echo ""
-echo "Quantum Metadata Server's Shared Secret: $sharedsecret"
+echo "Neutron Metadata Server's Shared Secret: $sharedsecret"
 echo ""
 
 echo ""
@@ -360,11 +385,11 @@ echo "export glancedb=$glancedb"
 echo ""
 
 echo ""
-echo "For installing the Quantum Server you can export the following variables:"
+echo "For installing the Neutron Server you can export the following variables:"
 echo ""
 echo "export mgtip=$mgtip"
-echo "export quantumuser=$quantumuser"
-echo "export quantumdb=$quantumdb"
+echo "export neutronuser=$neutronuser"
+echo "export neutrondb=$neutrondb"
 echo ""
 
 echo ""
@@ -373,9 +398,9 @@ echo ""
 echo "export controllerip=$mgtip"
 echo "export pubip=$pubip"
 echo "export glanceip=$glanceip"
-echo "export quantumip=$quantumip"
-echo "export quantumuser=$quantumuser"
-echo "export quantumdb=$quantumdb"
+echo "export neutronip=$neutronip"
+echo "export neutronuser=$neutronuser"
+echo "export neutrondb=$neutrondb"
 echo "export novauser=$novauser"
 echo "export novadb=$novadb"
 echo "export sharedsecret=$sharedsecret"
