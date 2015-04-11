@@ -276,7 +276,6 @@ keystone service-create --name neutron --type network --description 'OpenStack N
 keystone service-create --name heat --type orchestration --description 'Orchestration'
 keystone service-create --name heat-cfn --type cloudformation --description 'Orchestration'
 keystone service-create --name ceilometer --type metering --description 'Telemetry'
-keystone service-create --name keystone --type identity --description 'OpenStack Identity'
 
 ## Create Endpoints
 create_endpoint () {
