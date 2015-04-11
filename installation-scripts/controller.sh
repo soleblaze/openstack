@@ -367,7 +367,7 @@ rm -f /var/lib/nova/nova.sqlite
 for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
 
 ## Install neutron
-apt-get install neutron-server neutron-plugin-ml2 python-neutronclient
+apt-get install -y neutron-server neutron-plugin-ml2 python-neutronclient
 
 ## Setup /etc/neutron/neutron.conf
 servicetenantid=$(keystone tenant-get service | awk '/id/ {print $2}')
