@@ -345,6 +345,7 @@ enabled_apis=ec2,osapi_compute,metadata
 connection = mysql://novaUser:$novadb@$mgtip/nova
 rpc_backend = rabbit
 rabbit_host = $mgtip
+rabbit_userid=openstack
 rabbit_password = $rabbitpw
 auth_strategy = keystone
 my_ip = $mgtip
