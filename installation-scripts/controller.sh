@@ -260,7 +260,9 @@ keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CEILOMETER_USER --
 
 export MYSQL_USER=keystoneUser
 export MYSQL_DATABASE=keystone
-export KEYSTONE_REGION=RegionOne
+if [ -z "$KEYSTONE_REGION" ]; then
+    export KEYSTONE_REGION=RegionOne
+fi
 
 ## Create Services
 
