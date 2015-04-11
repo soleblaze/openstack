@@ -10,7 +10,6 @@ if [ -z "$mgtip" ]; then
     mgtip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 fi
 
-
 if [ -z "$pubip" ]; then
     echo -n "Input Public Interface: "
     read pubiface
