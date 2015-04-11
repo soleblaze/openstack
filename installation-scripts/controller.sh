@@ -463,10 +463,8 @@ su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
 # Restart neutron
 service neutron-server restart
 
-# TODO: Have not updated past here for juno
 # Install Horizon
-
-apt-get install -y openstack-dashboard memcached
+apt-get install -y openstack-dashboard apache2 libapache2-mod-wsgi memcached python-memcache
 
 # Disable offline compression 
 
