@@ -16,6 +16,11 @@ if [ -z "$pubip" ]; then
     pubip=$(ip addr show $pubiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 fi
 
+if [ -z "$ADMIN_EMAIL" ]; then
+    echo -n "Input Admin Email Address: "
+    read ADMIN_EMAIL
+fi
+
 if [ -z "$ADMIN_PASSWORD" ]; then
     echo -n "Input Admin Password: "
     read ADMIN_PASSWORD
@@ -217,7 +222,7 @@ ADMIN_TENANT=$(get_id keystone tenant-create --name=admin)
 SERVICE_TENANT=$(get_id keystone tenant-create --name=service)
 
 ## Admin User
-ADMIN_USER=$(get_id keystone user-create --name=admin --pass="$ADMIN_PASSWORD" --email=admin@example.com)
+ADMIN_USER=$(get_id keystone user-create --name=admin --pass="$ADMIN_PASSWORD" --email="${ADMIN_EMAIL}")
 
 ## Roles
 ADMIN_ROLE=$(get_id keystone role-create --name=admin)
