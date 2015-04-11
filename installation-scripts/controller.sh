@@ -135,7 +135,7 @@ service mysql restart
 
 # Runs same queries that mysql_secure_installation does
 mysqladmin -u root password "$MYSQL_PASSWORD"
-mysql -u root <<-EOF
+mysql -u root -p${MYSQL_PASSWORD} <<-EOF
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\_%';
@@ -159,10 +159,10 @@ mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE cinder;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY '${cinderdb}';"
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE ceilometer;"
-mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON ceilometer* TO 'ceilometerUser'@'%' IDENTIFIED BY '${ceilometerdb}';"
+mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON ceilometer.* TO 'ceilometerUser'@'%' IDENTIFIED BY '${ceilometerdb}';"
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE heat;"
-mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON heat* TO 'heatUser'@'%' IDENTIFIED BY '${heatdb}';"
+mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON heat.* TO 'heatUser'@'%' IDENTIFIED BY '${heatdb}';"
 
 # Install RabbitMQ
 apt-get install -y rabbitmq-server
@@ -249,7 +249,6 @@ keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role
 
 HEAT_USER=$(get_id keystone user-create --name=heat --pass="$heatuser" --tenant-id $SERVICE_TENANT --email=heat@domain.com)
 keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $HEAT_USER --role-id $ADMIN_ROLE
-Vjj
 CEILOMETER_USER=$(get_id keystone user-create --name=ceilometer --pass="$ceilometeruser" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
 keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CEILOMETER_USER --role-id $ADMIN_ROLE
 
