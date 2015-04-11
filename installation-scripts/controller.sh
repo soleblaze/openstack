@@ -108,6 +108,10 @@ if [ -z "$rabbitpw" ]; then
     rabbitpw=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
 
+# Generate admin token
+if [ -z "$keystonetoken" ]; then
+    keystonetoken=$(openssl rand -hex 10)
+fi
 
 # Generate Shared Secret for Neutron Metadata Server
 
@@ -181,18 +185,20 @@ service rabbitmq-server restart
 apt-get install -y ntp
 
 # Install keystone
-apt-get install -y keystone
+apt-get install -y keystone python-keystoneclient
 
 # Setup keystone.conf
 
+sed -i -e "s|^#admin_token.*|admin_token=${keystonetoken}|" /etc/keystone/keystone.conf
+sed -i -e "s|^#provider.*|provider = keystone.token.providers.uuid.Provider|" /etc/keystone/keystone.conf
+sed -i -e "s|^#driver=keystone.token.persistence.backends.sql.Token|driver = keystone.token.persistence.backends.sql.Token|" /etc/keystone/keystone.conf
+sed -i -e "s|^#driver=keystone.contrib.revoke.backends.kvs.Revoke|driver = keystone.contrib.revoke.backends.sql.Revoke|" /etc/keystone/keystone.conf
 sed -i -e "s|^connection.*|connection\ =\ mysql://keystoneUser:${keystonedb}@${mgtip}/keystone|" /etc/keystone/keystone.conf
-sed -i -e 's/^#token_format.*/token_format\ =\ UUID/' /etc/keystone/keystone.conf
 
 
-# Restart Keystone and Sync the service
-
+# Sync and restart the keystone service
+su -s /bin/sh -c "keystone-manage db_sync" keystone
 service keystone restart
-keystone-manage db_sync
 
 # Setup Keystones basic configuration
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_basic.sh
@@ -413,66 +419,69 @@ service apache2 restart
 service memcached restart
 
 # Echo out passwords for future Setup
+if [ -z "$silent" ]; then
+    echo "This information should be kept in a safe place:"
+    echo ""
+    echo "Controller Server IP: $mgtip"
+    echo "Public IP: $pubip"
+    echo "Cinder Server IP: $cinderip"
+    echo "Glance Server IP: $glanceip"
+    echo "Neutron Server IP: $neutronip"
+    echo ""
+    echo "Cinder MySQL Database Password: $cinderdb"
+    echo "Glance MySQL Database Password: $glancedb"
+    echo "Nova MySQL Database Password: $novadb"
+    echo "Keystone MySQL Database Password: $keystonedb"
+    echo "Neutron MySQL Database Password: $neutrondb"
+    echo ""
+    echo "Cinder Keystone User Password: $cinderuser"
+    echo "Glance Keystone User Password: $glanceuser"
+    echo "Nova Keystone User Password: $novauser"
+    echo "Neutron Keystone User Password: $neutronuser"
+    echo ""
+    echo "Neutron Metadata Server's Shared Secret: $sharedsecret"
+    echo ""
 
-echo "This information should be kept in a safe place:"
-echo ""
-echo "Controller Server IP: $mgtip"
-echo "Public IP: $pubip"
-echo "Cinder Server IP: $cinderip"
-echo "Glance Server IP: $glanceip"
-echo "Neutron Server IP: $neutronip"
-echo ""
-echo "Cinder MySQL Database Password: $cinderdb"
-echo "Glance MySQL Database Password: $glancedb"
-echo "Nova MySQL Database Password: $novadb"
-echo "Keystone MySQL Database Password: $keystonedb"
-echo "Neutron MySQL Database Password: $neutrondb"
-echo ""
-echo "Cinder Keystone User Password: $cinderuser"
-echo "Glance Keystone User Password: $glanceuser"
-echo "Nova Keystone User Password: $novauser"
-echo "Neutron Keystone User Password: $neutronuser"
-echo ""
-echo "Neutron Metadata Server's Shared Secret: $sharedsecret"
-echo ""
+    echo ""
+    echo "For installing the Cinder Server you can export the following variables:"
+    echo ""
+    echo "export mgtip=$mgtip"
+    echo "export cinderuser=$cinderuser"
+    echo "export cinderdb=$cinderdb"
+    echo ""
 
-echo ""
-echo "For installing the Cinder Server you can export the following variables:"
-echo ""
-echo "export mgtip=$mgtip"
-echo "export cinderuser=$cinderuser"
-echo "export cinderdb=$cinderdb"
-echo ""
+    echo ""
+    echo "For installing the Glance Server you can export the following variables:"
+    echo ""
+    echo "export mgtip=$mgtip"
+    echo "export glanceuser=$glanceuser"
+    echo "export glancedb=$glancedb"
+    echo ""
 
-echo ""
-echo "For installing the Glance Server you can export the following variables:"
-echo ""
-echo "export mgtip=$mgtip"
-echo "export glanceuser=$glanceuser"
-echo "export glancedb=$glancedb"
-echo ""
+    echo ""
+    echo "For installing the Neutron Server you can export the following variables:"
+    echo ""
+    echo "export mgtip=$mgtip"
+    echo "export neutronuser=$neutronuser"
+    echo "export neutrondb=$neutrondb"
+    echo ""
 
-echo ""
-echo "For installing the Neutron Server you can export the following variables:"
-echo ""
-echo "export mgtip=$mgtip"
-echo "export neutronuser=$neutronuser"
-echo "export neutrondb=$neutrondb"
-echo ""
+    echo ""
+    echo "For installing a Compute Server you can export the following variables:"
+    echo ""
+    echo "export controllerip=$mgtip"
+    echo "export pubip=$pubip"
+    echo "export glanceip=$glanceip"
+    echo "export neutronip=$neutronip"
+    echo "export neutronuser=$neutronuser"
+    echo "export neutrondb=$neutrondb"
+    echo "export novauser=$novauser"
+    echo "export novadb=$novadb"
+    echo "export sharedsecret=$sharedsecret"
+    echo "export rabbitpw=$rabbitpw"
+    echo "export keystonetoken=$keystonetoken"
+    echo ""
 
-echo ""
-echo "For installing a Compute Server you can export the following variables:"
-echo ""
-echo "export controllerip=$mgtip"
-echo "export pubip=$pubip"
-echo "export glanceip=$glanceip"
-echo "export neutronip=$neutronip"
-echo "export neutronuser=$neutronuser"
-echo "export neutrondb=$neutrondb"
-echo "export novauser=$novauser"
-echo "export novadb=$novadb"
-echo "export sharedsecret=$sharedsecret"
-echo ""
-
-echo ""
-echo "For using nova commands you need to source /root/.novarc first."
+    echo ""
+    echo "For using nova commands you need to source /root/.novarc first."
+fi
