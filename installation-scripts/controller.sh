@@ -456,6 +456,12 @@ enable_ipset = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 EOF
 
+# Populate database
+su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
+--config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade juno" neutron
+
+# Restart neutron
+service neutron-server restart
 
 # TODO: Have not updated past here for juno
 # Install Horizon
