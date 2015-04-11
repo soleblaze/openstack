@@ -344,7 +344,7 @@ enabled_apis=ec2,osapi_compute,metadata
 connection = mysql://novaUser:$novadb@$mgtip/nova
 rpc_backend = rabbit
 rabbit_host = $mgtip
-rabbit_userid=openstack
+rabbit_userid = openstack
 rabbit_password = $rabbitpw
 auth_strategy = keystone
 my_ip = $mgtip
@@ -355,7 +355,7 @@ vncserver_proxyclient_address = $mgtip
 auth_uri = http://$mgtip:5000/v2.0
 identity_uri = http://$mgtip:35357
 admin_tenant_name = service
-admin_user = novaUser
+admin_user = nova
 admin_password = $novauser
 
 [glance]
@@ -392,7 +392,7 @@ notify_nova_on_port_data_changes = True
 nova_url = http://${mgtip}:8774/v2
 nova_admin_auth_url = http://${mgtip}:35357/v2.0
 nova_region_name = ${KEYSTONE_REGION}
-nova_admin_username = novaUser
+nova_admin_username = nova
 nova_admin_tenant_id = ${SERVICE_TENANT}
 nova_admin_password = ${novauser}
 [matchmaker_redis]
@@ -404,7 +404,7 @@ root_helper = sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
 auth_uri = http://${mgtip}:5000/v2.0
 identity_uri = http://${mgtip}:35357
 admin_tenant_name = service
-admin_user = neutronUser
+admin_user = neutron
 admin_password = $neutronuser
 [database]
 connection = mysql://neutronUser:${neutrondb}@${mgtip}/neutron
