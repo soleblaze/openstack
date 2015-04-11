@@ -203,6 +203,11 @@ service keystone restart
 # Delete uneeded sqlite file
 rm -f /var/lib/keystone/keystone.db
 
+# Setup cron to purge tokens hourly
+(crontab -l -u keystone 2>&1 | grep -q token_flush) || \
+echo '@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-tokenflush.log 2>&1' \
+>> /var/spool/cron/crontabs/keystone
+
 # Setup Keystones basic configuration
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_basic.sh
 
