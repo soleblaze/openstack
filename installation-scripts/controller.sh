@@ -4,7 +4,6 @@
 export DEBIAN_FRONTEND=noninteractive
 
 # Get Setup Info from User
-
 if [ -z "$mgtip" ]; then
     echo -n "Input Management Interface: "
     read mgtiface
@@ -56,7 +55,6 @@ if [ -z "$neutronip" ]; then
 fi
 
 # Generate Random passwords for database accounts
-
 if [ -z "$keystonedb" ]; then
     keystonedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
@@ -80,7 +78,6 @@ if [ -z "$novadb" ]; then
 fi
 
 # Generate Random passwords for keystone accounts
-
 if [ -z "$ceilometeruser" ]; then
     ceilometeruser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
@@ -114,13 +111,11 @@ if [ -z "$keystonetoken" ]; then
 fi
 
 # Generate Shared Secret for Neutron Metadata Server
-
 if [ -z "$sharedsecret" ]; then
     sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
 
 # Add repos for grizzly if they don't already exist
-
 if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
     apt-get install -y ubuntu-cloud-keyring
     echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
@@ -128,7 +123,6 @@ if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
 fi
 
 # Install mysql
-
 apt-get install -y mariadb-server python-mysqldb
 sed -i "s/127.0.0.1/$mgtip/g" /etc/mysql/my.cnf
 awk '/.*InnoDB related.*/{print $0 RS \
@@ -150,7 +144,6 @@ FLUSH PRIVILEGES;
 EOF
 
 # Setup databases
-
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE keystone;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY '${keystonedb}';"
 
@@ -188,7 +181,6 @@ apt-get install -y ntp
 apt-get install -y keystone python-keystoneclient
 
 # Setup keystone.conf
-
 sed -i -e "s|^#admin_token.*|admin_token=${keystonetoken}|" /etc/keystone/keystone.conf
 sed -i -e "s|^#provider.*|provider = keystone.token.providers.uuid.Provider|" /etc/keystone/keystone.conf
 sed -i -e "s|^#driver=keystone.token.persistence.backends.sql.Token|driver = keystone.token.persistence.backends.sql.Token|" /etc/keystone/keystone.conf
@@ -212,7 +204,6 @@ echo '@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-t
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_basic.sh
 
 ## Set Variables for keystone
-
 export ADMIN_PASSWORD
 export SERVICE_TOKEN="ADMIN"
 export SERVICE_ENDPOINT="http://$mgtip:35357/v2.0"
@@ -273,7 +264,6 @@ if [ -z "$KEYSTONE_REGION" ]; then
 fi
 
 ## Create Services
-
 keystone service-create --name nova --type compute --description 'OpenStack Compute'
 keystone service-create --name cinder --type volume --description 'OpenStack Block Storage'
 keystone service-create --name cinderv2 --type volumev2 --description 'OpenStack Block Storage'
@@ -286,7 +276,6 @@ keystone service-create --name ceilometer --type metering --description 'Telemet
 keystone service-create --name keystone --type identity --description 'OpenStack Identity'
 
 ## Create Endpoints
-
 create_endpoint () {
   case $1 in
     compute)
@@ -377,20 +366,18 @@ host = $glanceip
 EOF
 
 ## Sync nova database
-
 su -s /bin/sh -c "nova-manage db sync" nova
 
-# Delete unneeded sqlite file
+## Delete unneeded sqlite file
 rm -f /var/lib/nova/nova.sqlite
 
 ## Restart nova services
-
 for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
 
 ## Install neutron
 apt-get install neutron-server neutron-plugin-ml2 python-neutronclient
 
-# Setup /etc/neutron/neutron.conf
+## Setup /etc/neutron/neutron.conf
 servicetenantid=$(keystone tenant-get service | awk '/id/ {print $2}')
 
 cat > /etc/neutron/neutron.conf << EOF
@@ -430,17 +417,8 @@ service_provider=LOADBALANCER:Haproxy:neutron.services.loadbalancer.drivers.hapr
 service_provider=VPN:openswan:neutron.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default
 EOF
 
-# Setup /etc/neutron/neutron.conf
+## Setup /etc/neutron/neutron.conf
 cat > /etc/neutron/neutron.conf << EOF
-[ml2]
-[ml2_type_flat]
-[ml2_type_vlan]
-[ml2_type_gre]
-[ml2_type_vxlan]
-[securitygroup]
-root@controller:/etc/neutron/plugins/ml2# sed -e '/^#/d' -e '/^$/d' ml2_conf.ini  > /root/ml2_conf.ini
-root@controller:/etc/neutron/plugins/ml2# vi /root/ml2_conf.ini 
-root@controller:/etc/neutron/plugins/ml2# cat /root/ml2_conf.ini 
 [ml2]
 type_drivers = flat,gre
 tenant_network_types = gre
@@ -467,11 +445,9 @@ service neutron-server restart
 apt-get install -y openstack-dashboard apache2 libapache2-mod-wsgi memcached python-memcache
 
 # Disable offline compression 
-
 sed -i -e 's/COMPRESS_OFFLINE\ =\ True/COMPRESS_OFFLINE\ =\ False/' /etc/openstack-dashboard/local_settings.py
 
 # Restart apache2 and memcached
-
 service apache2 restart
 service memcached restart
 
