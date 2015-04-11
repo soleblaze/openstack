@@ -203,10 +203,8 @@ echo '@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-t
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_basic.sh
 
 ## Set Variables for keystone
-export ADMIN_PASSWORD
-export SERVICE_TOKEN="ADMIN"
-export SERVICE_ENDPOINT="http://$mgtip:35357/v2.0"
-export SERVICE_TENANT_NAME=service
+export OS_SERVICE_TOKEN=${keystonetoken}
+export OS_SERVICE_ENDPOINT=http://${mgtip}:35357/v2.0
 
 
 ## Create a function to grab the id
