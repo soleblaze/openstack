@@ -317,96 +317,66 @@ for i in compute volume volumev2 image orchestration cloudformation metering ide
 done
 
 # Create credentials file 
-
 echo export OS_TENANT_NAME=admin > /root/.novarc
 echo export OS_USERNAME=admin >> /root/.novarc
 echo export OS_PASSWORD="$ADMIN_PASSWORD" >> /root/.novarc
 echo export OS_AUTH_URL="http://$mgtip:5000/v2.0/" >> /root/.novarc
 
-# TODO: Have not updated past here for juno
-
 # Install nova
-
-apt-get install -y nova-api nova-cert novnc nova-consoleauth nova-scheduler nova-novncproxy nova-doc nova-conductor 
+apt-get install -y nova-api nova-cert nova-conductor nova-consoleauth \
+nova-novncproxy nova-scheduler python-novaclient
 
 # Set keystone auth info in /etc/nova/api-paste.ini
-
 sed -i -e "s/^auth_host.*/auth_host\ =\ $mgtip/" /etc/nova/api-paste.ini
 sed -i -e "s/^admin_tenant_name.*/admin_tenant_name\ =\ service/" /etc/nova/api-paste.ini
 sed -i -e "s/^admin_user.*/admin_user\ =\ nova/" /etc/nova/api-paste.ini
 sed -i -e "s/^admin_password.*/admin_password\ =\ $novauser/" /etc/nova/api-paste.ini
 
 # Create nova.conf file
-
 rm /etc/nova/nova.conf
 
 cat > /etc/nova/nova.conf << EOF
 [DEFAULT]
+dhcpbridge_flagfile=/etc/nova/nova.conf
+dhcpbridge=/usr/bin/nova-dhcpbridge
 logdir=/var/log/nova
 state_path=/var/lib/nova
-lock_path=/run/lock/nova
+lock_path=/var/lock/nova
+force_dhcp_release=True
+libvirt_use_virtio_for_bridges=True
 verbose=True
+ec2_private_dns_show_ip=True
 api_paste_config=/etc/nova/api-paste.ini
-compute_scheduler_driver=nova.scheduler.simple.SimpleScheduler
-rabbit_host=$mgtip
-nova_url=http://$mgtip:8774/v1.1/
-sql_connection=mysql://novaUser:$novadb@$mgtip/nova
-root_helper=sudo nova-rootwrap /etc/nova/rootwrap.conf
+enabled_apis=ec2,osapi_compute,metadata
+connection = mysql://novaUser:$novadb@$mgtip/nova
+rpc_backend = rabbit
+rabbit_host = $mgtip
+rabbit_password = $rabbitpw
+auth_strategy = keystone
+my_ip = $mgtip
+vncserver_listen = $mgtip
+vncserver_proxyclient_address = $mgtip
 
-# Auth
-use_deprecated_auth=false
-auth_strategy=keystone
+[keystone_authtoken]
+auth_uri = http://$mgtip:5000/v2.0
+identity_uri = http://$mgtip:35357
+admin_tenant_name = service
+admin_user = novaUser
+admin_password = $novauser
 
-# Imaging service
-glance_api_servers=$glanceip:9292
-image_service=nova.image.glance.GlanceImageService
-
-# Vnc configuration
-novnc_enabled=true
-novncproxy_base_url=http://$pubip:6080/vnc_auto.html
-novncproxy_port=6080
-vncserver_proxyclient_address=$mgtip
-vncserver_listen=0.0.0.0
-
-# Network settings
-network_api_class=nova.network.quantumv2.api.API
-quantum_url=http://$neutronip:9696
-quantum_auth_strategy=keystone
-quantum_admin_tenant_name=service
-quantum_admin_username=quantum
-quantum_admin_password=$quantumuser
-quantum_admin_auth_url=http://$neutronip:35357/v2.0
-libvirt_vif_driver=nova.virt.libvirt.vif.LibvirtHybridOVSBridgeDriver
-linuxnet_interface_driver=nova.network.linux_net.LinuxOVSInterfaceDriver
-firewall_driver=nova.virt.libvirt.firewall.IptablesFirewallDriver
-
-#Metadata
-service_quantum_metadata_proxy = True
-quantum_metadata_proxy_shared_secret = $sharedsecret
-metadata_host = $neutronip
-metadata_listen = $neutronip
-metadata_listen_port = 8775
-
-# Compute #
-compute_driver=libvirt.LibvirtDriver
-
-# Cinder #
-volume_api_class=nova.volume.cinder.API
-osapi_volume_listen_port=5900
+[glance]
+host = $glanceip
 EOF
 
 ## Sync nova database
 
-nova-manage db sync
+su -s /bin/sh -c "nova-manage db sync" nova
 
 ## Restart nova services
 
 for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
 
-## Install Novaclient python tools
-
-apt-get install -y python-novaclient
-
+# TODO: Have not updated past here for juno
 # Install Horizon
 
 apt-get install -y openstack-dashboard memcached
