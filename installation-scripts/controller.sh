@@ -373,7 +373,6 @@ for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncprox
 apt-get install -y neutron-server neutron-plugin-ml2 python-neutronclient
 
 ## Setup /etc/neutron/neutron.conf
-servicetenantid=$(keystone tenant-get service | awk '/id/ {print $2}')
 
 cat > /etc/neutron/neutron.conf << EOF
 [DEFAULT]
@@ -392,7 +391,7 @@ nova_url = http://${mgtip}:8774/v2
 nova_admin_auth_url = http://${mgtip}:35357/v2.0
 nova_region_name = ${KEYSTONE_REGION}
 nova_admin_username = novaUser
-nova_admin_tenant_id = ${servicetenantid}
+nova_admin_tenant_id = ${SERVICE_TENANT}
 nova_admin_password = ${novauser}
 [matchmaker_redis]
 [matchmaker_ring]
