@@ -200,6 +200,9 @@ sed -i -e "s|^connection.*|connection\ =\ mysql://keystoneUser:${keystonedb}@${m
 su -s /bin/sh -c "keystone-manage db_sync" keystone
 service keystone restart
 
+# Delete uneeded sqlite file
+rm -f /var/lib/keystone/keystone.db
+
 # Setup Keystones basic configuration
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_basic.sh
 
@@ -371,6 +374,9 @@ EOF
 ## Sync nova database
 
 su -s /bin/sh -c "nova-manage db sync" nova
+
+# Delete unneeded sqlite file
+rm -f /var/lib/nova/nova.sqlite
 
 ## Restart nova services
 
