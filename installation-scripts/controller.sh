@@ -5,65 +5,115 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Get Setup Info from User
 
-echo -n "Input Management Interface: "
-read mgtiface
-mgtip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
+if [ -z "$mgtip" ]; then
+    echo -n "Input Management Interface: "
+    read mgtiface
+    mgtip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
+fi
 
 
-echo -n "Input Public Interface: "
-read pubiface
-pubip=$(ip addr show $pubiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
+if [ -z "$pubip" ]; then
+    echo -n "Input Public Interface: "
+    read pubiface
+    pubip=$(ip addr show $pubiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
+fi
 
-echo -n "Input Admin Password: "
-read ADMIN_PASSWORD
+if [ -z "$ADMIN_PASSWORD" ]; then
+    echo -n "Input Admin Password: "
+    read ADMIN_PASSWORD
+fi
 
-echo -n "Input MySQL Root Password: "
-read MYSQL_PASSWORD
-
-echo -n "Input Cinder IP [${mgtip}]: "
-read cinderip
+if [ -z "$MYSQL_PASSWORD" ]; then
+    echo -n "Input MySQL Root Password: "
+    read MYSQL_PASSWORD
+fi
 
 if [ -z "$cinderip" ]; then
-    cinderip=$mgtip
-fi
+    echo -n "Input Cinder IP [${mgtip}]: "
+    read cinderip
 
-echo -n "Input Glance IP [${mgtip}]: "
-read glanceip
+    if [ -z "$cinderip" ]; then
+        cinderip=$mgtip
+    fi
+fi
 
 if [ -z "$glanceip" ]; then
-    glanceip=$mgtip
+    echo -n "Input Glance IP [${mgtip}]: "
+    read glanceip
+
+    if [ -z "$glanceip" ]; then
+        glanceip=$mgtip
+    fi
 fi
 
-echo -n "Input Neutron IP [${mgtip}]: "
-read neutronip
-
 if [ -z "$neutronip" ]; then
+    echo -n "Input Neutron IP [${mgtip}]: "
+    read neutronip
+
+    if [ -z "$neutronip" ]; then
     neutronip=$mgtip
+    fi
 fi
 
 # Generate Random passwords for database accounts
 
-keystonedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-ceilometerdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-cinderdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-glancedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-heatdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-neutrondb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-novadb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+if [ -z "$keystonedb" ]; then
+    keystonedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$ceilometerdb" ]; then
+    ceilometerdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$cinderdb" ]; then
+    cinderdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$glancedb" ]; then
+    glancedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$heatdb" ]; then
+    heatdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$neutrondb" ]; then
+    neutrondb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$novadb" ]; then
+    novadb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
 
 # Generate Random passwords for keystone accounts
 
-ceilometeruser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-cinderuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-glanceuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-heatuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-neutronuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-novauser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-neutronuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+if [ -z "$ceilometeruser" ]; then
+    ceilometeruser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$cinderuser" ]; then
+    cinderuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$glanceuser" ]; then
+    glanceuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$heatuser" ]; then
+    heatuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$neutronuser" ]; then
+    neutronuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$novauser" ]; then
+    novauser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+if [ -z "$neutronuser" ]; then
+    neutronuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+
+# Generate rabbit password
+if [ -z "$rabbitpw" ]; then
+    rabbitpw=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
+
 
 # Generate Shared Secret for Neutron Metadata Server
 
-sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+if [ -z "$sharedsecret" ]; then
+    sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
 
 # Add repos for grizzly if they don't already exist
 
@@ -75,10 +125,25 @@ fi
 
 # Install mysql
 
-apt-get install -y mysql-server python-mysqldb
+apt-get install -y mariadb-server python-mysqldb
 sed -i "s/127.0.0.1/$mgtip/g" /etc/mysql/my.cnf
-mysqladmin -u root password "$MYSQL_PASSWORD"
+awk '/.*InnoDB related.*/{print $0 RS \
+"default-storage-engine = innodb" RS \
+"innodb_file_per_table" RS \
+"collation-server = utf8_general_ci" RS \
+"init-connect = '\''SET NAMES utf8'\''" RS \
+"character-set-server = utf8";next}1' /etc/mysql/my.cnf > /tmp/my.cnf
+mv /tmp/my.cnf /etc/mysql/my.cnf
 service mysql restart
+
+# Runs same queries that mysql_secure_installation does
+mysqladmin -u root password "$MYSQL_PASSWORD"
+mysql -u root <<-EOF
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\_%';
+FLUSH PRIVILEGES;
+EOF
 
 # Setup databases
 
@@ -104,15 +169,18 @@ mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE heat;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON heat* TO 'heatUser'@'%' IDENTIFIED BY '${heatdb}';"
 
 # Install RabbitMQ
-
 apt-get install -y rabbitmq-server
 
-# Install ntp
+# Setup RabbitMQ openstack user
+rabbitmqctl delete_user guest
+rabbitmqctl add_user openstack ${rabbitpw}
+rabbitmqctl set_permissions openstack ".*" ".*" ".*"
+service rabbitmq-server restart
 
+# Install ntp
 apt-get install -y ntp
 
 # Install keystone
-
 apt-get install -y keystone
 
 # Setup keystone.conf
