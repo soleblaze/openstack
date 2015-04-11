@@ -211,11 +211,13 @@ echo '@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-t
 export OS_SERVICE_TOKEN=${keystonetoken}
 export OS_SERVICE_ENDPOINT=http://${mgtip}:35357/v2.0
 
-
 ## Create a function to grab the id
 get_id () {
     echo `$@ | awk '/ id / { print $4 }'`
 }
+
+## Pause for 5 seconds so keystone has a chance to completely start
+sleep 5
 
 ## Tenants
 ADMIN_TENANT=$(get_id keystone tenant-create --name=admin)
