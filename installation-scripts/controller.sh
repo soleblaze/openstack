@@ -323,12 +323,6 @@ echo export OS_AUTH_URL="http://$mgtip:5000/v2.0/" >> /root/.novarc
 apt-get install -y nova-api nova-cert nova-conductor nova-consoleauth \
 nova-novncproxy nova-scheduler python-novaclient
 
-# Set keystone auth info in /etc/nova/api-paste.ini
-sed -i -e "s/^auth_host.*/auth_host\ =\ $mgtip/" /etc/nova/api-paste.ini
-sed -i -e "s/^admin_tenant_name.*/admin_tenant_name\ =\ service/" /etc/nova/api-paste.ini
-sed -i -e "s/^admin_user.*/admin_user\ =\ nova/" /etc/nova/api-paste.ini
-sed -i -e "s/^admin_password.*/admin_password\ =\ $novauser/" /etc/nova/api-paste.ini
-
 # Create nova.conf file
 rm /etc/nova/nova.conf
 
