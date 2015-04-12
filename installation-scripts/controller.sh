@@ -454,6 +454,50 @@ sed -i -e 's/COMPRESS_OFFLINE\ =\ True/COMPRESS_OFFLINE\ =\ False/' /etc/opensta
 service apache2 restart
 service memcached restart
 
+# Install Cinder
+apt-get install -y cinder-api cinder-scheduler python-cinderclient
+
+# Setup /etc/cinder/cinder.conf
+#cat > /etc/cinder/cinder.conf < EOF
+#[DEFAULT]
+#control_exchange = cinder
+#notification_driver = messagingv2
+#rpc_backend = rabbit
+#rabbit_userid = openstack
+#rabbit_host = ${mgtip}
+#rabbit_password = ${rabbitpw}
+#auth_strategy = keystone
+#my_ip = ${mgtip}
+
+#[database]
+#connection = mysql://cinder:${cinderdbpass}@${mgtip}/glance
+
+#[keystone_authtoken]
+#auth_uri = http://${mgtip}:5000/v2.0
+#identity_uri = http://${mgtip}:35357
+#admin_tenant_name = service
+#admin_user = cinder
+#admin_password = ${cinderuserpass}
+#EOF
+
+# Restart Services
+service cinder-scheduler restart
+service cinder-api restart
+
+# Populate database
+su -s /bin/sh -c "cinder-manage db sync" cinder
+
+# delete unneeded sqlite file
+rm -f /var/lib/cinder/cinder.sqlite
+
+# Install Orchestration
+apt-get install -y heat-api heat-api-cfn heat-engine python-heatclient
+
+# Edit /etc/heat/heat.conf
+
+# Install Telemetry
+apt-get install -y mongodb-server mongodb-clients python-pymongo
+
 # Echo out passwords for future Setup
 if [ -z "$silent" ]; then
     echo "This information should be kept in a safe place:"
