@@ -1,5 +1,4 @@
 #!/bin/bash
-
 echo -n "Input Data Interface: "
 read dataiface
 localip=$(ip addr show $dataiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
@@ -13,89 +12,94 @@ if [ -z "$mgtip" ]; then
     mgtip=$localip
 fi
 
-if [ -z "$glanceuser" ]; then
+if [ -z "$glanceuserpass" ]; then
     echo -e "Input Glance Keystone User's Password: "
-    read glanceuser
+    read glanceuserpass
 fi
 
-if [ -z "$glancedb" ]; then
+if [ -z "$glancedbpass" ]; then
     echo -e "Input Glance MySQL Database's Password: "
-    read glancedb
+    read glancedbpass
 fi
 
+if [ -z "$rabbitpw" ]; then
+    echo -e "Input RabbitMQ Password: "
+    read rabbitpw
+fi
 
-# Add repos for grizzly if they don't already exist
-
-if [ ! -e /etc/apt/sources.list.d/grizzly.list ]; then
-    apt-get install ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
-    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
+# Add repos for juno if they don't already exist
+if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
+    apt-get install -y ubuntu-cloud-keyring
+    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
     apt-get update
 fi
 
-# Instal glance
+# Install glance
+apt-get install -y glance python-glanceclient
 
-apt-get install -y glance
+# Setup /etc/glance/glance-api.conf
+cat > /etc/glance/glance-api.conf < EOF
+[DEFAULT]
+notification_driver = messagingv2
+rpc_backend = rabbit
+rabbit_userid = openstack
+rabbit_host = ${mgtip}
+rabbit_password = ${rabbitpw}
 
-# Setup authentication
+[database]
+connection = mysql://glance:${glancedbpass}@${mgtip}/glance
 
-echo "auth_host = $mgtip" >> /etc/glance/glance-api-paste.ini
-echo "auth_port = 35357" >> /etc/glance/glance-api-paste.ini
-echo "auth_protocol = http" >> /etc/glance/glance-api-paste.ini
-echo "admin_tenant_name = service" >> /etc/glance/glance-api-paste.ini
-echo "admin_user = glance" >> /etc/glance/glance-api-paste.ini
-echo "admin_password = $glanceuser" >> /etc/glance/glance-api-paste.ini
+[keystone_authtoken]
+auth_uri = http://${mgtip}:5000/v2.0
+identity_uri = http://${mgtip}:35357
+admin_tenant_name = service
+admin_user = glance
+admin_password = ${glanceuserpass}
+ 
+[paste_deploy]
+flavor = keystone
 
-# Setup database access
+[glance_store]
+default_store = file
+filesystem_store_datadir = /var/lib/glance/images/
+EOF
 
-sed -i -e "s|^sql_connection.*|sql_connection\ =\ mysql://glanceUser:$glancedb@$mgtip/glance|" /etc/glance/glance-api.conf
+# Setup /etc/glance/glance-registry.conf
+cat > /etc/glance/glance-registry.conf < EOF
+[DEFAULT]
+notification_driver = messagingv2
+rpc_backend = rabbit
+rabbit_userid = openstack
+rabbit_host = ${mgtip}
+rabbit_password = ${rabbitpw}
 
-# Setup glance registry authentication
+[database]
+connection = mysql://glance:${glancedbpass}@${mgtip}/glance
 
-echo "auth_host = $mgtip" >> /etc/glance/glance-registry-paste.ini
-echo "auth_port = 35357" >> /etc/glance/glance-registry-paste.ini
-echo "auth_protocol = http" >> /etc/glance/glance-registry-paste.ini
-echo "admin_tenant_name = service" >> /etc/glance/glance-registry-paste.ini
-echo "admin_user = glance" >> /etc/glance/glance-registry-paste.ini
-echo "admin_password = $glanceuser" >> /etc/glance/glance-registry-paste.ini
-
-# Setup glance registry database access
-
-sed -i -e "s|^sql_connection.*|sql_connection\ =\ mysql://glanceUser:$glancedb@$mgtip/glance|" /etc/glance/glance-registry.conf
-sed -i -e "s/^#flavor=/flavor\ =\ keystone/" /etc/glance/glance-registry.conf
-
-# Setup glance api database access
-
-sed -i -e "s|^sql_connection.*|sql_connection\ =\ mysql://glanceUser:$glancedb@$mgtip/glance|" /etc/glance/glance-api.conf
-sed -i -e "s/^#flavor=/flavor\ =\ keystone/" /etc/glance/glance-api.conf
-
-# Setup authtoken for glance-api
-
-sed -i -e "s/^auth_host.*/auth_host\ =\ $mgtip/" /etc/glance/glance-api.conf
-sed -i -e "s/^admin_tenant_name.*/admin_tenant_name\ =\ service/" /etc/glance/glance-api.conf
-sed -i -e "s/^admin_user.*/admin_user\ =\ glance/" /etc/glance/glance-api.conf
-sed -i -e "s/^admin_password.*/admin_password\ =\ $glanceuser/" /etc/glance/glance-api.conf
-
-# Setup authtoken for glance-registry
-
-sed -i -e "s/^auth_host.*/auth_host\ =\ $mgtip/" /etc/glance/glance-registry.conf
-sed -i -e "s/^admin_tenant_name.*/admin_tenant_name\ =\ service/" /etc/glance/glance-registry.conf
-sed -i -e "s/^admin_user.*/admin_user\ =\ glance/" /etc/glance/glance-registry.conf
-sed -i -e "s/^admin_password.*/admin_password\ =\ $glanceuser/" /etc/glance/glance-registry.conf
+[keystone_authtoken]
+auth_uri = http://${mgtip}:5000/v2.0
+identity_uri = http://${mgtip}:35357
+admin_tenant_name = service
+admin_user = glance
+admin_password = ${glanceuserpass}
+ 
+[paste_deploy]
+flavor = keystone
+EOF
 
 # Restart glance
-
 service glance-api restart
 service glance-registry restart
 
 # Sync glance database
-
-glance-manage db_sync
+su -s /bin/sh -c "glance-manage db_sync" glance
 
 # Restart glance again
-
 service glance-api restart
 service glance-registry restart
 
-# Done
+# Delete uneeded sqlite file
+rm -f /var/lib/glance/glance.sqlite
 
+# Done
 echo "Glance has been installed."
