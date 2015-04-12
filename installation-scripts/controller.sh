@@ -376,6 +376,7 @@ sleep 10
 
 ## Sync nova database
 su -s /bin/sh -c "nova-manage db sync" nova
+su -s /bin/sh -c "nova-manage db sync" nova
 
 ## Delete unneeded sqlite file
 rm -f /var/lib/nova/nova.sqlite
@@ -719,9 +720,10 @@ if [ -z "$silent" ]; then
     echo "For installing the Glance Server you can export the following variables:"
     echo ""
     echo "export mgtip=$mgtip"
-    echo "export glanceuser=$glanceuser"
-    echo "export glancedb=$glancedb"
+    echo "export glanceuserpass=$glanceuser"
+    echo "export glancedbpass=$glancedb"
     echo "export ceilometersecret=$ceilometersecret"
+    echo "export rabbitpw=$rabbitpw"
     echo ""
 
     echo ""
