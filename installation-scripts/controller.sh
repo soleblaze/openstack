@@ -673,7 +673,10 @@ service ceilometer-alarm-notifier restart
 
 ## Sync nova database
 ## This is here because it seems to fail when its right next to nova installer
-su -s /bin/sh -c "nova-manage db sync" nova
+## Still isn't working.  Testing by running it from a separate script
+echo 'su -s /bin/sh -c "nova-manage db sync" nova' > /tmp/nova.sh
+bash /tmp/nova.sh
+rm /tmp/nova.sh
 
 ## Delete unneeded sqlite file
 rm -f /var/lib/nova/nova.sqlite
