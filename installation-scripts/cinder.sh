@@ -45,6 +45,16 @@ apt-get install -y cinder-volume python-mysqldb
 
 cat > /etc/cinder/cinder.conf << EOF
 [DEFAULT]
+rootwrap_config = /etc/cinder/rootwrap.conf
+api_paste_confg = /etc/cinder/api-paste.ini
+iscsi_helper = tgtadm
+volume_name_template = volume-%s
+volume_group = cinder-volumes
+state_path = /var/lib/cinder
+lock_path = /var/lock/cinder
+volumes_dir = /var/lib/cinder/volumes
+control_exchange = cinder
+notification_driver = messagingv2
 rpc_backend = rabbit
 rabbit_userid = openstack
 rabbit_host = ${mgtip}
