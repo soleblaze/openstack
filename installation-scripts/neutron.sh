@@ -1,12 +1,17 @@
 #!/bin/bash
-
-echo -n "Input Quantum Network Interface: "
+echo -n "Input Neutron Network Interface: "
 read mgtiface
 localip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
-echo -n "Input Public Interface: "
-read pubiface
-pubip=$(ip addr show $pubiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
+echo -n "Input Tunnel Network Interface: "
+read tuniface
+tunip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
+
+echo -n "Input External Interface: "
+read extiface
+
+echo -n "Input External Interface VLAN Range If Used: "
+read vlanrange
 
 if [ -z "$mgtip" ]; then
     echo -n "Input Controller IP [$localip]: "
@@ -17,120 +22,156 @@ if [ -z "$mgtip" ]; then
     mgtip=$localip
 fi
 
-if [ -z "$quantumuser" ]; then
-    echo -e "Input Quantum Keystone User's Password: "
-    read quantumuser
+if [ -z "$neutronuserpass" ]; then
+    echo -e "Input Neutron Keystone User's Password: "
+    read neutronuserpass
 fi
 
-if [ -z "$quantumdb" ]; then
-    echo -e "Input Quantum MySQL Database's Password: "
-    read quantumdb
+if [ -z "$neutrondbpass" ]; then
+    echo -e "Input Neutron MySQL Database's Password: "
+    read neutrondbpass
 fi
 
-# Add repos for grizzly if they don't already exist
+if [ -z "$KEYSTONE_REGION" ]; then
+    KEYSTONE_REGION=RegionOne
+fi
 
-if [ ! -e /etc/apt/sources.list.d/grizzly.list ]; then
-    apt-get install ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
-    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
+# Generate Shared Secret for Neutron Metadata Server
+if [ -z "$sharedsecret" ]; then
+    echo -e "Input Neutron Shared Secret: "
+    read sharedsecret
+fi
+
+
+# Add repos for juno if they don't already exist
+if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
+    apt-get install -y ubuntu-cloud-keyring
+    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
     apt-get update
 fi
 
 # Install NTP
-    
 apt-get install -y ntp
 
-# Install Network Services
 
-apt-get install -y vlan bridge-utils
+## Setup /etc/neutron/neutron.conf
 
-## install openvsswitch
+cat > /etc/neutron/neutron.conf << EOF
+[DEFAULT]
+lock_path = \$state_path/lock
+core_plugin = ml2
+service_plugins = router
+allow_overlapping_ips = True
+auth_strategy = keystone
+rpc_backend = rabbit
+rabbit_host=${mgtip}
+rabbit_userid=openstack
+rabbit_password=${rabbitpw}
 
-apt-get install -y openvswitch-switch openvswitch-datapath-dkms
-    
-## Create bridges
+[matchmaker_redis]
 
-ovs-vsctl add-br br-int
-ovs-vsctl add-br br-ext
+[matchmaker_ring]
 
-# Modify /etc/network/interfaces to keep ethernet port working
+[quotas]
 
-sed -i -e "s/$pubiface/br-ext/" /etc/network/interfaces
+[agent]
+root_helper = sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
 
-echo "" >> /etc/network/interfaces
-echo "auto $pubiface" >> /etc/network/interfaces
-echo "iface $pubiface inet manual" >> /etc/network/interfaces
-echo -e "\tup ifconfig \$IFACE up" >> /etc/network/interfaces
-echo -e "\tdown ifconfig \$IFACE down" >> /etc/network/interfaces
+[keystone_authtoken]
+auth_uri = http://${mgtip}:5000/v2.0
+identity_uri = http://${mgtip}:35357
+admin_tenant_name = service
+admin_user = neutron
+admin_password = $neutronuser
 
-# Enable IP Forwarding
+[database]
+connection = mysql://neutronUser:${neutrondb}@${mgtip}/neutron
 
-sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
-sysctl net.ipv4.ip_forward=1
+[service_providers]
+service_provider=LOADBALANCER:Haproxy:neutron.services.loadbalancer.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver:default
+service_provider=VPN:openswan:neutron.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default
+EOF
 
-# Install Quantum
+## Setup /etc/neutron/plugins/ml2/ml2_conf.ini
+cat > /etc/neutron/plugins/ml2/ml2_conf.ini << EOF
+[ml2]
+type_drivers = flat,gre
+tenant_network_types = gre
+mechanism_drivers = openvswitch
 
-apt-get install -y quantum-server quantum-plugin-openvswitch quantum-plugin-openvswitch-agent dnsmasq quantum-dhcp-agent quantum-l3-agent
+[ml2_type_flat]
+flat_networks = external
 
-# Setup authentication 
+[ml2_type_vlan]
+#network_vlan_ranges=external:1:100
 
-sed -i -e "s/^auth_host.*/auth_host\ =\ $mgtip/" /etc/quantum/api-paste.ini
-sed -i -e "s/^admin_tenant_name.*/admin_tenant_name\ =\ service/" /etc/quantum/api-paste.ini
-sed -i -e "s/^admin_user.*/admin_user\ =\ quantum/" /etc/quantum/api-paste.ini
-sed -i -e "s/^admin_password.*/admin_password\ =\ $quantumuser/" /etc/quantum/api-paste.ini
+[ml2_type_gre]
+tunnel_id_ranges = 1:1000
 
-sed -i -e "s/keystoneclient.middleware.auth_token:filter_factory/keystoneclient.middleware.auth_token:filter_factory\nauth_host = $mgtip\nauth_port = 35357\nauth_protocol = http\nadmin_tenant_name = service\nadmin_user = quantum\nadmin_password = $quantumuser/" /etc/quantum/api-paste.ini
+[ml2_type_vxlan]
 
-# Setup OVS Plugin Configuration
+[securitygroup]
+enable_security_group = True
+enable_ipset = True
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 
-sed -i -e "s|^sql_connection.*|sql_connection\ =\ mysql://quantumUser:$quantumdb@$mgtip/quantum|" /etc/quantum/plugins/openvswitch/ovs_quantum_plugin.ini
+[ovs]
+local_ip = ${tunip}
+enable_tunneling = True
+bridge_mappings = external:br-ex
 
-sed -i -e "s|^\[OVS\]|\[OVS\]\ntenant_network_type\ =\ gre\ntunnel_id_ranges\ =\ 1:1000\nintegration_bridge\ =\ br-int\ntunnel_bridge\ =\ br-tun\nlocal_ip\ =\ $localip\nenable_tunneling\ =\ True|"  /etc/quantum/plugins/openvswitch/ovs_quantum_plugin.ini
+[agent]
+tunnel_types = gre
+EOF
 
-# Setup l3_agent authentication
+if [ "$vlanrange" ]; then
+    sed "s|#network_vlan_ranges.*|network_vlan_ranges=external:${vlanrange}|" \
+/etc/neutron/plugins/ml2/ml2_conf.ini
+fi
 
-echo "auth_url = http://$mgtip:35357/v2.0" >> /etc/quantum/l3_agent.ini
-echo "auth_region = RegionOne" >> /etc/quantum/l3_agent.ini
-echo "admin_tenant_name = service" >> /etc/quantum/l3_agent.ini
-echo "admin_user = quantum" >> /etc/quantum/l3_agent.ini
-echo "admin_password = $quantumuser" >> /etc/quantum/l3_agent.ini
+## Setup /etc/neutron/l3_agent.ini
+cat > /etc/neutron/l3_agent.ini << EOF
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+use_namespaces = True
+external_network_bridge = br-ex
+router_delete_namespaces = True
+EOF
 
-# Setup metadata l3_agent
 
-sed -i -e "s|^auth_url.*|auth_url\ =\ http://$mgtip:35357/v2.0|" /etc/quantum/metadata_agent.ini
-sed -i -e "s/^admin_tenant_name.*/admin_tenant_name\ =\ service/" /etc/quantum/metadata_agent.ini
-sed -i -e "s/^admin_user.*/admin_user\ =\ quantum/" /etc/quantum/metadata_agent.ini
-sed -i -e "s/^admin_password.*/admin_password\ =\ $quantumuser/" /etc/quantum/metadata_agent.ini
-sed -i -e "s/#\ metadata_proxy_shared_secret.*/metadata_proxy_shared_secret\ =\ $sharedsecret/" /etc/quantum/metadata_agent.ini
-sed -i -e "s/#\ nova_metadata_ip.*/nova_metadata_ip\ =\ $localip/" /etc/quantum/metadata_agent.ini
-sed -i -e 's/#\ \(nova_metadata_port.*\)/\1/'  /etc/quantum/metadata_agent.ini
+## Setup /etc/neutron/dhcp_agent.ini
+cat > /etc/neutron/dhcp_agent.ini << EOF
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
+use_namespaces = True
+dhcp_delete_namespaces = True
+dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
+EOF
 
-# Enable namespaces with the dhcp agent
+# Set MTU to 1454 to work around GRE issues
+# This can be removed if jumbo frames are enabled
+echo "dhcp-option-force=26,1454" > /etc/neutron/dnsmasq-neutron.conf
 
-sed -i -e "s/#\ use_namespaces.*/use_namespaces\ =\ True/" /etc/quantum/dhcp_agent.ini
+## Setup /etc/neutron/metadata_agent.ini
+cat > /etc/neutron/metadata_agent.ini << EOF
+[DEFAULT]
+auth_url = http://${mgtip}:5000/v2.0
+auth_region = ${KEYSTONE_REGION}
+admin_tenant_name = service
+admin_user = neutron
+admin_password = ${neutronuserpass}
+nova_metadata_ip = ${mgtip}
+metadata_proxy_shared_secret = ${sharedsecret}
+EOF
 
-# Lock down dnsmasq to Quantum Network Interface
+## Configure external bridge
+service openvswitch-switch restart
+ovs-vsctl add-br br-ex
+ovs-vsctl add-port br-ex ${extiface}
 
-sed -i -e "s/^#interface=.*/interface=$mgtiface/" /etc/dnsmasq.conf
-
-# Give quantum sudo access for running ip in order to fix some errors that show in the logs
-
-echo "" >> /etc/sudoers
-echo "# This is to fix errors that quantum generates" >> /etc/sudoers
-echo "quantum ALL = NOPASSWD: /sbin/ip" >> /etc/sudoers
-
-# Restart quantum Services
-
-for service in quantum-dhcp-agent quantum-l3-agent quantum-metadata-agent quantum-plugin-openvswitch-agent quantum-server dnsmasq; do service $service restart; done
-
-# Setup External VM access
-
-ovs-vsctl br-set-external-id br-ext bridge-id br-ext
-ovs-vsctl add-port br-ext $pubiface
-
-# Restart networking
-
-service networking restart
-
-# Report Sucess
-
-echo "Quantum should now be installed and working."
+# Restart Services
+service neutron-plugin-openvswitch-agent restart
+service neutron-l3-agent restart
+service neutron-dhcp-agent restart
+service neutron-metadata-agent restart
