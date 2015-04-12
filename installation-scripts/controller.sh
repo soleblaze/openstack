@@ -577,13 +577,13 @@ apt-get install -y mongodb-server mongodb-clients python-pymongo
 sed -i "s/127.0.0.1/$mgtip/g" /etc/mongodb.conf
 echo "smallfiles = true" >> /etc/mongodb.conf
 
-# Wait for mongodb to come back up
-sleep 10
-
 # Delete journaldb files and restart mongodb
 service mongodb stop
 rm /var/lib/mongodb/journal/prealloc.*
 service mongodb start
+
+# Wait for mongodb to come back up
+sleep 10
 
 # Create ceilometer database
 mongo --host ${mgtip} --eval '
