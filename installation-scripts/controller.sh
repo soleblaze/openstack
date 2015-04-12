@@ -482,12 +482,12 @@ admin_user = cinder
 admin_password = ${cinderuserpass}
 EOF
 
+# Populate database
+su -s /bin/sh -c "cinder-manage db sync" cinder
+
 # Restart Services
 service cinder-scheduler restart
 service cinder-api restart
-
-# Populate database
-su -s /bin/sh -c "cinder-manage db sync" cinder
 
 # delete unneeded sqlite file
 rm -f /var/lib/cinder/cinder.sqlite
