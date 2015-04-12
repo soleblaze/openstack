@@ -53,6 +53,15 @@ fi
 # Install NTP
 apt-get install -y ntp
 
+# Install neutron
+apt-get install -y neutron-plugin-ml2 neutron-plugin-openvswitch-agent \
+neutron-l3-agent neutron-dhcp-agent
+
+# Setup sysctl for ip forwarding
+echo 'net.ipv4.ip_forward=1
+net.ipv4.conf.all.rp_filter=0
+net.ipv4.conf.default.rp_filter=0' > /etc/sysctl.d/20-ipforward.conf
+sysctl -p
 
 ## Setup /etc/neutron/neutron.conf
 
