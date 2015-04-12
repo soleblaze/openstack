@@ -85,6 +85,13 @@ localip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 # Fix LVM so that cinder volumes don't cause performance issues
 sed -i -e 's|filter = \[ \"a\/.*\/" \]|filter = [ "a/sda/", "a/sdb/", "r/.*/"]|' /etc/lvm/lvm.conf
 
+# Add repos for juno if they don't already exist
+if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
+    apt-get install -y ubuntu-cloud-keyring
+    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
+    apt-get update
+fi
+
 # Install nova
 apt-get install -y nova-compute sysfsutils
 
