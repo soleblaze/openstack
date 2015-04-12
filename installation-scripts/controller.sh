@@ -114,11 +114,6 @@ if [ -z "$keystonetoken" ]; then
     keystonetoken=$(openssl rand -hex 10)
 fi
 
-# Generate Shared Secret for Neutron Metadata Server
-if [ -z "$sharedsecret" ]; then
-    sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
-fi
-
 # Add repos for juno if they don't already exist
 if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
     apt-get install -y ubuntu-cloud-keyring
@@ -398,19 +393,26 @@ nova_region_name = ${KEYSTONE_REGION}
 nova_admin_username = nova
 nova_admin_tenant_id = ${SERVICE_TENANT}
 nova_admin_password = ${novauser}
+
 [matchmaker_redis]
+
 [matchmaker_ring]
+
 [quotas]
+
 [agent]
 root_helper = sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
+
 [keystone_authtoken]
 auth_uri = http://${mgtip}:5000/v2.0
 identity_uri = http://${mgtip}:35357
 admin_tenant_name = service
 admin_user = neutron
 admin_password = $neutronuser
+
 [database]
 connection = mysql://neutronUser:${neutrondb}@${mgtip}/neutron
+
 [service_providers]
 service_provider=LOADBALANCER:Haproxy:neutron.services.loadbalancer.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver:default
 service_provider=VPN:openswan:neutron.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default
@@ -422,11 +424,16 @@ cat > /etc/neutron/plugins/ml2/ml2_conf.ini << EOF
 type_drivers = flat,gre
 tenant_network_types = gre
 mechanism_drivers = openvswitch
+
 [ml2_type_flat]
+
 [ml2_type_vlan]
+
 [ml2_type_gre]
 tunnel_id_ranges = 1:1000
+
 [ml2_type_vxlan]
+
 [securitygroup]
 enable_security_group = True
 enable_ipset = True
@@ -470,9 +477,6 @@ if [ -z "$silent" ]; then
     echo "Glance Keystone User Password: $glanceuser"
     echo "Nova Keystone User Password: $novauser"
     echo "Neutron Keystone User Password: $neutronuser"
-    echo ""
-    echo "Neutron Metadata Server's Shared Secret: $sharedsecret"
-    echo ""
 
     echo ""
     echo "For installing the Cinder Server you can export the following variables:"
