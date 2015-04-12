@@ -733,8 +733,8 @@ if [ -z "$silent" ]; then
     echo ""
     echo "export controllerip=$mgtip"
     echo "export pubip=$pubip"
-    echo "export glanceippass=$glanceip"
-    echo "export neutronippass=$neutronip"
+    echo "export glanceip=$glanceip"
+    echo "export neutronip=$neutronip"
     echo "export neutronuserpass=$neutronuser"
     echo "export neutrondbpass=$neutrondb"
     echo "export novauserpass=$novauser"
@@ -743,6 +743,7 @@ if [ -z "$silent" ]; then
     echo "export rabbitpw=$rabbitpw"
     echo "export keystonetoken=$keystonetoken"
     echo "export ceilometersecret=$ceilometersecret"
+    echo "export ceilometeruserpass=$ceilometeruser"
     echo ""
 
     echo ""
