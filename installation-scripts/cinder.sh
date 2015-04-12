@@ -79,3 +79,6 @@ service tgt restart
 service cinder-volume restart
 
 rm -f /var/lib/cinder/cinder.sqlite
+
+# Set up LVM filter to prevent performance issues relating to cinder lvms
+sed -i -e 's|filter = \[ \"a\/.*\/" \]|filter = [ "a/sda/", "a/sdb/", "r/.*/"]|' /etc/lvm/lvm.conf
