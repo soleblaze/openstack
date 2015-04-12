@@ -722,7 +722,6 @@ if [ -z "$silent" ]; then
     echo "export mgtip=$mgtip"
     echo "export glanceuserpass=$glanceuser"
     echo "export glancedbpass=$glancedb"
-    echo "export ceilometersecret=$ceilometersecret"
     echo "export rabbitpw=$rabbitpw"
     echo ""
 
