@@ -360,6 +360,10 @@ admin_password = $novauser
 
 [glance]
 host = $glanceip
+
+[neutron]
+service_metadata_proxy = True
+metadata_proxy_shared_secret = ${sharedsecret}
 EOF
 
 ## Restart nova services
