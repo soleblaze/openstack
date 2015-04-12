@@ -65,8 +65,8 @@ fi
 if [ -z "$ceilometerdb" ]; then
     ceilometerdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
-if [ -z "$cinderdb" ]; then
-    cinderdb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+if [ -z "$cinderdbpass" ]; then
+    cinderdbpass=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
 if [ -z "$glancedb" ]; then
     glancedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
@@ -85,8 +85,8 @@ fi
 if [ -z "$ceilometeruser" ]; then
     ceilometeruser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
-if [ -z "$cinderuser" ]; then
-    cinderuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+if [ -z "$cinderuserpass" ]; then
+    cinderuserpass=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
 if [ -z "$glanceuser" ]; then
     glanceuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
@@ -166,7 +166,7 @@ mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE nova;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON nova.* TO 'novaUser'@'%' IDENTIFIED BY '${novadb}';"
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE cinder;"
-mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY '${cinderdb}';"
+mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY '${cinderdbpass}';"
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE heat;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON heat.* TO 'heatUser'@'%' IDENTIFIED BY '${heatdb}';"
@@ -251,7 +251,7 @@ keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $GLANCE_USER --role
 NEUTRON_USER=$(get_id keystone user-create --name=neutron --pass="$neutronuser" --tenant-id $SERVICE_TENANT --email=neutron@domain.com)
 keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NEUTRON_USER --role-id $ADMIN_ROLE
 
-CINDER_USER=$(get_id keystone user-create --name=cinder --pass="$cinderuser" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
+CINDER_USER=$(get_id keystone user-create --name=cinder --pass="$cinderuserpass" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
 keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role-id $ADMIN_ROLE
 
 HEAT_USER=$(get_id keystone user-create --name=heat --pass="$heatuser" --tenant-id $SERVICE_TENANT --email=heat@domain.com)
@@ -471,7 +471,6 @@ api_paste_confg = /etc/cinder/api-paste.ini
 iscsi_helper = tgtadm
 volume_name_template = volume-%s
 volume_group = cinder-volumes
-verbose = True
 auth_strategy = keystone
 state_path = /var/lib/cinder
 lock_path = /var/lock/cinder
@@ -692,17 +691,18 @@ if [ -z "$silent" ]; then
     echo "Glance Server IP: $glanceip"
     echo "Neutron Server IP: $neutronip"
     echo ""
-    echo "Cinder MySQL Database Password: $cinderdb"
+    echo "Cinder MySQL Database Password: $cinderdbpass"
     echo "Glance MySQL Database Password: $glancedb"
     echo "Nova MySQL Database Password: $novadb"
     echo "Keystone MySQL Database Password: $keystonedb"
     echo "Neutron MySQL Database Password: $neutrondb"
     echo ""
-    echo "Cinder Keystone User Password: $cinderuser"
+    echo "Cinder Keystone User Password: $cinderuserpass"
     echo "Glance Keystone User Password: $glanceuser"
     echo "Nova Keystone User Password: $novauser"
     echo "Neutron Keystone User Password: $neutronuser"
     echo ""
+    echo "RabbitMQ Pass: $rabbitpw"
     echo "Neutron Metadata Server's Shared Secret: $sharedsecret"
     echo "Ceilometer Server's Shared Secret: $ceilometersecret"
     echo ""
@@ -711,9 +711,9 @@ if [ -z "$silent" ]; then
     echo "For installing the Cinder Server you can export the following variables:"
     echo ""
     echo "export mgtip=$mgtip"
-    echo "export cinderuser=$cinderuser"
-    echo "export cinderdb=$cinderdb"
-    echo "export ceilometersecret=$ceilometersecret"
+    echo "export cinderuserpass=$cinderuserpass"
+    echo "export cinderdbpass=$cinderdbpass"
+    echo "export rabbitpw=$rabbitpw"
     echo ""
 
     echo ""
