@@ -91,7 +91,7 @@ auth_uri = http://${mgtip}:5000/v2.0
 identity_uri = http://${mgtip}:35357
 admin_tenant_name = service
 admin_user = neutron
-admin_password = $neutronuser
+admin_password = $neutronuserpass
 
 [database]
 connection = mysql://neutronUser:${neutrondb}@${mgtip}/neutron
