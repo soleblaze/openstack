@@ -36,12 +36,17 @@ if [ -z "$KEYSTONE_REGION" ]; then
     KEYSTONE_REGION=RegionOne
 fi
 
-# Generate Shared Secret for Neutron Metadata Server
+# Get Shared Secret for Neutron Metadata Server
 if [ -z "$sharedsecret" ]; then
     echo -e "Input Neutron Shared Secret: "
     read sharedsecret
 fi
 
+# Get RabbitMQ Password
+if [ -z "$rabbitpw" ]; then
+    echo -e "Input RabbitMQ: "
+    read rabbitpw
+fi
 
 # Add repos for juno if they don't already exist
 if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
