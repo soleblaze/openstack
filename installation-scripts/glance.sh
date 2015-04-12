@@ -38,7 +38,7 @@ fi
 apt-get install -y glance python-glanceclient
 
 # Setup /etc/glance/glance-api.conf
-cat > /etc/glance/glance-api.conf < EOF
+cat > /etc/glance/glance-api.conf << EOF
 [DEFAULT]
 notification_driver = messagingv2
 rpc_backend = rabbit
@@ -47,7 +47,7 @@ rabbit_host = ${mgtip}
 rabbit_password = ${rabbitpw}
 
 [database]
-connection = mysql://glance:${glancedbpass}@${mgtip}/glance
+connection = mysql://glanceUser:${glancedbpass}@${mgtip}/glance
 
 [keystone_authtoken]
 auth_uri = http://${mgtip}:5000/v2.0
@@ -65,7 +65,7 @@ filesystem_store_datadir = /var/lib/glance/images/
 EOF
 
 # Setup /etc/glance/glance-registry.conf
-cat > /etc/glance/glance-registry.conf < EOF
+cat > /etc/glance/glance-registry.conf << EOF
 [DEFAULT]
 notification_driver = messagingv2
 rpc_backend = rabbit
@@ -74,7 +74,7 @@ rabbit_host = ${mgtip}
 rabbit_password = ${rabbitpw}
 
 [database]
-connection = mysql://glance:${glancedbpass}@${mgtip}/glance
+connection = mysql://glanceUser:${glancedbpass}@${mgtip}/glance
 
 [keystone_authtoken]
 auth_uri = http://${mgtip}:5000/v2.0
