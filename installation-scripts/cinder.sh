@@ -4,6 +4,9 @@ echo -n "Input Data Interface: "
 read dataiface
 localip=$(ip addr show $dataiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
+echo -n "Input Management Interface: "
+read mgtiface
+cindermgtip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
 if [ -z "$mgtip" ]; then
     echo -n "Input Controller IP [$localip]: "
@@ -14,72 +17,50 @@ if [ -z "$mgtip" ]; then
     mgtip=$localip
 fi
 
-if [ -z "$cinderuser" ]; then
+if [ -z "$cinderuserpass" ]; then
     echo -e "Input Cinder Keystone User's Password: "
-    read glanceuser
+    read glanceuserpass
 fi
 
-if [ -z "$cinderdb" ]; then
+if [ -z "$cinderdbpass" ]; then
     echo -e "Input Cinder MySQL Database's Password: "
-    read glancedb
+    read glancedbpass
 fi
 
-
-# Add repos for grizzly if they don't already exist
-
-if [ ! -e /etc/apt/sources.list.d/grizzly.list ]; then
-    apt-get install ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
-    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
+# Add repos for juno if they don't already exist
+if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
+    apt-get install -y ubuntu-cloud-keyring
+    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
     apt-get update
 fi
 
+
 # Install Cinder
+apt-get install -y cinder-volume python-mysqldb
 
-apt-get install -y cinder-api cinder-scheduler cinder-volume iscsitarget open-iscsi iscsitarget-dkms python-mysqldb
+cat > /etc/cinder/cinder.conf << EOF
+[DEFAULT]
+rpc_backend = rabbit
+rabbit_userid = openstack
+rabbit_host = ${mgtip}
+rabbit_password = ${rabbitpw}
+auth_strategy = keystone
+my_ip = ${cindermgtip}
+glance_host = ${mgtip}
 
-# Enable iSCSI Services
+[database]
+connection = mysql://cinder:${cinderdbpass}@${mgtip}/cinder
 
-sed -i 's/false/true/g' /etc/default/iscsitarget
-service iscsitarget start
-service open-iscsi start
+[keystone_authtoken]
+auth_uri = http://${mgtip}:5000/v2.0
+identity_uri = http://${mgtip}:35357
+admin_tenant_name = service
+admin_user = cinder
+admin_password = ${cinderuserpass}
+EOF
 
-# Setup authentication
+# Restart Services
+service tgt restart
+service cinder-volume restart
 
-sed -i -e "s/^auth_host.*/auth_host\ =\ $mgtip/" /etc/cinder/api-paste.ini
-sed -i -e "s/^admin_tenant_name.*/admin_tenant_name\ =\ service/" /etc/cinder/api-paste.ini
-sed -i -e "s/^admin_user.*/admin_user\ =\ quantum/" /etc/cinder/api-paste.ini
-sed -i -e "s/^admin_password.*/admin_password\ =\ $quantumuser/" /etc/cinder/api-paste.ini
-sed -i -e "s/^service_host.*/service_host\ =\ $localip/" /etc/cinder/api-paste.ini
-
-# Setup database connection for Cinder
-
-echo "sql_connection = mysql://cinderUser:$cinderdb@$mgtip/cinder" >> /etc/cinder/cinder.conf
-
-# Lock Cinder down to the data port
-
-echo "osapi_volume_listen=$localip" >> /etc/cinder/cinder.conf
-
-# Update iSCSI Type for Cidner
-
-sed -i -e "s/^iscsi_helper.*/iscsi_helper\ =\ ietadm/" /etc/cinder/cinder.conf
-
-# Sync Cinder
-
-cinder-manage db sync
-
-
-# Restart Cinder
-
-for service in cinder-api cinder-scheduler cinder-volume; do service $service restart; done
-
-# done
-
-echo "Cinder has been installed"
-echo ""
-echo "In order to use Cinder you will need to have a LVM2 Volume Group named cinder-volumes"
-echo ""
-echo "You can create this using the following commands.  Subsitute [DISK] for your the partition"
-echo "you would like to use for this"
-echo ""
-echo "pvcreate /dev/[DISK]"
-echo "lvcreate cinder-volumes /dev/[DISK]"
+rm -f /var/lib/cinder/cinder.sqlite
