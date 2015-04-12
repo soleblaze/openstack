@@ -99,7 +99,6 @@ admin_user = neutron
 admin_password = $neutronuserpass
 
 [database]
-connection = mysql://neutronUser:${neutrondb}@${mgtip}/neutron
 
 [service_providers]
 service_provider=LOADBALANCER:Haproxy:neutron.services.loadbalancer.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver:default
