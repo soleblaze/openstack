@@ -416,8 +416,8 @@ service_provider=LOADBALANCER:Haproxy:neutron.services.loadbalancer.drivers.hapr
 service_provider=VPN:openswan:neutron.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default
 EOF
 
-## Setup /etc/neutron/neutron.conf
-cat > /etc/neutron/neutron.conf << EOF
+## Setup /etc/neutron/plugins/ml2/ml2_conf.ini
+cat > /etc/neutron/plugins/ml2/ml2_conf.ini << EOF
 [ml2]
 type_drivers = flat,gre
 tenant_network_types = gre
