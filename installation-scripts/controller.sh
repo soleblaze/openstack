@@ -371,6 +371,9 @@ EOF
 ## Restart nova services
 for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
 
+## Delete unneeded sqlite file
+rm -f /var/lib/nova/nova.sqlite
+
 ## Install neutron
 apt-get install -y neutron-server neutron-plugin-ml2 python-neutronclient
 
@@ -671,18 +674,6 @@ service ceilometer-collector restart
 service ceilometer-alarm-evaluator restart
 service ceilometer-alarm-notifier restart
 
-## Sync nova database
-## This is here because it seems to fail when its right next to nova installer
-## Still isn't working.  Testing by running it from a separate script
-echo 'su -s /bin/sh -c "nova-manage db sync" nova' > /tmp/nova.sh
-bash /tmp/nova.sh
-rm /tmp/nova.sh
-
-## Delete unneeded sqlite file
-rm -f /var/lib/nova/nova.sqlite
-
-## Restart nova services again
-for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
 
 # Echo out passwords for future Setup
 if [ -z "$silent" ]; then
@@ -756,4 +747,9 @@ if [ -z "$silent" ]; then
 
     echo ""
     echo "For using nova commands you need to source /root/.novarc first."
+
+    echo ""
+    echo "Run the following commands in order to fix nova's database"
+    echo 'su -s /bin/sh -c "nova-manage db sync" nova'
+    echo 'for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done'
 fi
