@@ -725,7 +725,7 @@ if [ -z "$silent" ]; then
     echo "export mgtip=$mgtip"
     echo "export neutronuserpass=$neutronuser"
     echo "export neutrondbpass=$neutrondb"
-    echo "export ceilometersecret=$ceilometersecret"
+    echo "export sharedsecret=$sharedsecret"
     echo ""
 
     echo ""
