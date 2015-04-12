@@ -119,7 +119,7 @@ if [ -z "$sharedsecret" ]; then
     sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
 
-# Add repos for grizzly if they don't already exist
+# Add repos for juno if they don't already exist
 if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
     apt-get install -y ubuntu-cloud-keyring
     echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
