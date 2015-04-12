@@ -114,6 +114,11 @@ if [ -z "$keystonetoken" ]; then
     keystonetoken=$(openssl rand -hex 10)
 fi
 
+# Generate ceilometer secret
+if [ -z "$ceilometersecret" ]; then
+    ceilometersecret=$(openssl rand -hex 10)
+fi
+
 # Generate Shared Secret for Neutron Metadata Server
 if [ -z "$sharedsecret" ]; then
     sharedsecret=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
@@ -162,9 +167,6 @@ mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON nova.* TO 'novaUser'@'%' IDENT
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE cinder;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY '${cinderdb}';"
-
-mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE ceilometer;"
-mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON ceilometer.* TO 'ceilometerUser'@'%' IDENTIFIED BY '${ceilometerdb}';"
 
 mysql -uroot -p${MYSQL_PASSWORD} -e "CREATE DATABASE heat;"
 mysql -uroot -p${MYSQL_PASSWORD} -e "GRANT ALL ON heat.* TO 'heatUser'@'%' IDENTIFIED BY '${heatdb}';"
@@ -461,7 +463,7 @@ service memcached restart
 apt-get install -y cinder-api cinder-scheduler python-cinderclient
 
 # Setup /etc/cinder/cinder.conf
-cat > /etc/cinder/cinder.conf < EOF
+cat > /etc/cinder/cinder.conf << EOF
 [DEFAULT]
 rootwrap_config = /etc/cinder/rootwrap.conf
 api_paste_confg = /etc/cinder/api-paste.ini
@@ -507,7 +509,7 @@ rm -f /var/lib/cinder/cinder.sqlite
 apt-get install -y heat-api heat-api-cfn heat-engine python-heatclient
 
 # Edit /etc/heat/heat.conf
-cat > /etc/heat/heat.conf < EOF
+cat > /etc/heat/heat.conf << EOF
 [DEFAULT]
 log_dir=/var/log/heat
 rpc_backend = rabbit
@@ -581,8 +583,103 @@ service heat-engine restart
 # Delete unneeded sqlite file
 rm -f /var/lib/heat/heat.sqlite
 
-# Install Telemetry
+# Install mongodb
 apt-get install -y mongodb-server mongodb-clients python-pymongo
+
+# Configure mongodb
+sed -i "s/127.0.0.1/$mgtip/g" /etc/mongodb.conf
+echo "smallfiles = true" >> /etc/mongodb.conf
+
+# Delete journaldb files and restart mongodb
+service mongodb stop
+rm /var/lib/mongodb/journal/prealloc.*
+service mongodb start
+
+# Create ceilometer database
+mongo --host controller --eval '
+db = db.getSiblingDB("ceilometer");
+db.addUser({user: "ceilometer",
+pwd: "'${ceilometerdb}'",
+roles: [ "readWrite", "dbAdmin" ]})'
+
+# Install ceilometer
+apt-get install -y ceilometer-api ceilometer-collector ceilometer-agent-central \
+ceilometer-agent-notification ceilometer-alarm-evaluator \
+ceilometer-alarm-notifier python-ceilometerclient
+
+# Create /etc/ceilometer/ceilometer.conf
+cat > /etc/ceilometer/ceilometer.conf << EOF
+[DEFAULT]
+log_dir=/var/log/ceilometer
+rpc_backend = rabbit
+rabbit_userid = openstack
+rabbit_host = ${mgtip}
+rabbit_password = ${rabbitpw}
+auth_strategy = keystone
+
+[alarm]
+
+[api]
+
+[central]
+
+[collector]
+
+[compute]
+
+[coordination]
+
+[database]
+connection = mongodb://ceilometer:${ceilometerdb}@${mgtip}:27017/ceilometer
+
+[dispatcher_file]
+
+[event]
+
+[hardware]
+
+[ipmi]
+
+[keystone_authtoken]
+auth_uri = http://${mgtip}:5000/v2.0
+identity_uri = http://${mgtip}:35357
+admin_tenant_name = service
+admin_user = ceilometer
+admin_password = ${ceilometeruser}
+
+[matchmaker_redis]
+
+[matchmaker_ring]
+
+[notification]
+
+[publisher]
+metering_secret = ${ceilometersecret}
+
+[publisher_notifier]
+
+[publisher_rpc]
+
+[service_credentials]
+os_auth_url = http://controller:5000/v2.0
+os_username = ceilometer
+os_tenant_name = service
+os_password = ${ceilometeruser}
+
+[service_types]
+
+[vmware]
+
+[xenapi]
+EOF
+
+# Restart ceilometer
+service ceilometer-agent-central restart
+service ceilometer-agent-notification restart
+service ceilometer-api restart
+service ceilometer-collector restart
+service ceilometer-alarm-evaluator restart
+service ceilometer-alarm-notifier restart
 
 # Echo out passwords for future Setup
 if [ -z "$silent" ]; then
@@ -606,6 +703,7 @@ if [ -z "$silent" ]; then
     echo "Neutron Keystone User Password: $neutronuser"
     echo ""
     echo "Neutron Metadata Server's Shared Secret: $sharedsecret"
+    echo "Ceilometer Server's Shared Secret: $ceilometersecret"
     echo ""
 
     echo ""
@@ -614,6 +712,7 @@ if [ -z "$silent" ]; then
     echo "export mgtip=$mgtip"
     echo "export cinderuser=$cinderuser"
     echo "export cinderdb=$cinderdb"
+    echo "export ceilometersecret=$ceilometersecret"
     echo ""
 
     echo ""
@@ -622,6 +721,7 @@ if [ -z "$silent" ]; then
     echo "export mgtip=$mgtip"
     echo "export glanceuser=$glanceuser"
     echo "export glancedb=$glancedb"
+    echo "export ceilometersecret=$ceilometersecret"
     echo ""
 
     echo ""
@@ -630,6 +730,7 @@ if [ -z "$silent" ]; then
     echo "export mgtip=$mgtip"
     echo "export neutronuser=$neutronuser"
     echo "export neutrondb=$neutrondb"
+    echo "export ceilometersecret=$ceilometersecret"
     echo ""
 
     echo ""
@@ -646,6 +747,7 @@ if [ -z "$silent" ]; then
     echo "export sharedsecret=$sharedsecret"
     echo "export rabbitpw=$rabbitpw"
     echo "export keystonetoken=$keystonetoken"
+    echo "export ceilometersecret=$ceilometersecret"
     echo ""
 
     echo ""
