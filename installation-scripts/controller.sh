@@ -734,7 +734,6 @@ if [ -z "$silent" ]; then
     echo "export controllerip=$mgtip"
     echo "export pubip=$pubip"
     echo "export glanceip=$glanceip"
-    echo "export neutronip=$neutronip"
     echo "export neutronuserpass=$neutronuser"
     echo "export neutrondbpass=$neutrondb"
     echo "export novauserpass=$novauser"
