@@ -485,7 +485,7 @@ auth_strategy = keystone
 my_ip = ${mgtip}
 
 [database]
-connection = mysql://cinder:${cinderdbpass}@${mgtip}/glance
+connection = mysql://cinderUser:${cinderdbpass}@${mgtip}/glance
 
 [keystone_authtoken]
 auth_uri = http://${mgtip}:5000/v2.0
@@ -542,7 +542,7 @@ heat_waitcondition_server_url = http://${mgtip}:8000/v1/waitcondition
 [clients_trove]
 
 [database]
-connection = mysql://heat:${heatdb}@${mgtip}/heat
+connection = mysql://heatUser:${heatdb}@${mgtip}/heat
 
 [ec2authtoken]
 auth_uri = http://controller:5000/v2.0
