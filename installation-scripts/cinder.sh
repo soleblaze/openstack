@@ -19,12 +19,17 @@ fi
 
 if [ -z "$cinderuserpass" ]; then
     echo -e "Input Cinder Keystone User's Password: "
-    read glanceuserpass
+    read cinderuserpass
 fi
 
 if [ -z "$cinderdbpass" ]; then
     echo -e "Input Cinder MySQL Database's Password: "
-    read glancedbpass
+    read cinderdbpass
+fi
+
+if [ -z "$rabbitpw" ]; then
+    echo -e "Input RabbitMQ Password: "
+    read rabbitpw
 fi
 
 # Add repos for juno if they don't already exist
@@ -49,7 +54,7 @@ my_ip = ${cindermgtip}
 glance_host = ${mgtip}
 
 [database]
-connection = mysql://cinder:${cinderdbpass}@${mgtip}/cinder
+connection = mysql://cinderUser:${cinderdbpass}@${mgtip}/cinder
 
 [keystone_authtoken]
 auth_uri = http://${mgtip}:5000/v2.0
