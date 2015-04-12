@@ -472,7 +472,7 @@ auth_strategy = keystone
 my_ip = ${mgtip}
 
 [database]
-connection = mysql://cinderUser:${cinderdbpass}@${mgtip}/glance
+connection = mysql://cinderUser:${cinderdbpass}@${mgtip}/cinder
 
 [keystone_authtoken]
 auth_uri = http://${mgtip}:5000/v2.0
