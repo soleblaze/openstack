@@ -362,14 +362,17 @@ admin_password = $novauser
 host = $glanceip
 EOF
 
+## Restart nova services
+for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
+
+## Pause for nova to start
+sleep 5
+
 ## Sync nova database
 su -s /bin/sh -c "nova-manage db sync" nova
 
 ## Delete unneeded sqlite file
 rm -f /var/lib/nova/nova.sqlite
-
-## Restart nova services
-for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
 
 ## Install neutron
 apt-get install -y neutron-server neutron-plugin-ml2 python-neutronclient
