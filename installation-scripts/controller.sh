@@ -461,27 +461,37 @@ service memcached restart
 apt-get install -y cinder-api cinder-scheduler python-cinderclient
 
 # Setup /etc/cinder/cinder.conf
-#cat > /etc/cinder/cinder.conf < EOF
-#[DEFAULT]
-#control_exchange = cinder
-#notification_driver = messagingv2
-#rpc_backend = rabbit
-#rabbit_userid = openstack
-#rabbit_host = ${mgtip}
-#rabbit_password = ${rabbitpw}
-#auth_strategy = keystone
-#my_ip = ${mgtip}
+cat > /etc/cinder/cinder.conf < EOF
+[DEFAULT]
+rootwrap_config = /etc/cinder/rootwrap.conf
+api_paste_confg = /etc/cinder/api-paste.ini
+iscsi_helper = tgtadm
+volume_name_template = volume-%s
+volume_group = cinder-volumes
+verbose = True
+auth_strategy = keystone
+state_path = /var/lib/cinder
+lock_path = /var/lock/cinder
+volumes_dir = /var/lib/cinder/volumes
+control_exchange = cinder
+notification_driver = messagingv2
+rpc_backend = rabbit
+rabbit_userid = openstack
+rabbit_host = ${mgtip}
+rabbit_password = ${rabbitpw}
+auth_strategy = keystone
+my_ip = ${mgtip}
 
-#[database]
-#connection = mysql://cinder:${cinderdbpass}@${mgtip}/glance
+[database]
+connection = mysql://cinder:${cinderdbpass}@${mgtip}/glance
 
-#[keystone_authtoken]
-#auth_uri = http://${mgtip}:5000/v2.0
-#identity_uri = http://${mgtip}:35357
-#admin_tenant_name = service
-#admin_user = cinder
-#admin_password = ${cinderuserpass}
-#EOF
+[keystone_authtoken]
+auth_uri = http://${mgtip}:5000/v2.0
+identity_uri = http://${mgtip}:35357
+admin_tenant_name = service
+admin_user = cinder
+admin_password = ${cinderuserpass}
+EOF
 
 # Restart Services
 service cinder-scheduler restart
@@ -497,6 +507,54 @@ rm -f /var/lib/cinder/cinder.sqlite
 apt-get install -y heat-api heat-api-cfn heat-engine python-heatclient
 
 # Edit /etc/heat/heat.conf
+cat > /etc/heat/heat.conf < EOF
+[DEFAULT]
+log_dir=/var/log/heat
+
+[auth_password]
+
+[clients]
+
+[clients_ceilometer]
+
+[clients_cinder]
+
+[clients_glance]
+
+[clients_heat]
+
+[clients_keystone]
+
+[clients_neutron]
+
+[clients_nova]
+
+[clients_swift]
+
+[clients_trove]
+
+[database]
+
+[ec2authtoken]
+
+[heat_api]
+
+[heat_api_cfn]
+
+[heat_api_cloudwatch]
+
+[keystone_authtoken]
+
+[matchmaker_redis]
+
+[matchmaker_ring]
+
+[oslo_messaging_amqp]
+
+[paste_deploy]
+
+[revision]
+EOF
 
 # Install Telemetry
 apt-get install -y mongodb-server mongodb-clients python-pymongo
