@@ -510,6 +510,12 @@ apt-get install -y heat-api heat-api-cfn heat-engine python-heatclient
 cat > /etc/heat/heat.conf < EOF
 [DEFAULT]
 log_dir=/var/log/heat
+rpc_backend = rabbit
+rabbit_userid = openstack
+rabbit_host = ${mgtip}
+rabbit_password = ${rabbitpw}
+heat_metadata_server_url = http://${mgtip}:8000
+heat_waitcondition_server_url = http://${mgtip}:8000/v1/waitcondition
 
 [auth_password]
 
@@ -534,8 +540,10 @@ log_dir=/var/log/heat
 [clients_trove]
 
 [database]
+connection = mysql://heat:${heatdb}@${mgtip}/heat
 
 [ec2authtoken]
+auth_uri = http://controller:5000/v2.0
 
 [heat_api]
 
@@ -543,7 +551,13 @@ log_dir=/var/log/heat
 
 [heat_api_cloudwatch]
 
+
 [keystone_authtoken]
+auth_uri = http://${mgtip}:5000/v2.0
+identity_uri = http://${mgtip}:35357
+admin_tenant_name = service
+admin_user = heat
+admin_password = ${heatuser}
 
 [matchmaker_redis]
 
@@ -555,6 +569,17 @@ log_dir=/var/log/heat
 
 [revision]
 EOF
+
+# Populate heat database
+su -s /bin/sh -c "heat-manage db_sync" heat
+
+# Restart heat
+service heat-api restart
+service heat-api-cfn restart
+service heat-engine restart
+
+# Delete unneeded sqlite file
+rm -f /var/lib/heat/heat.sqlite
 
 # Install Telemetry
 apt-get install -y mongodb-server mongodb-clients python-pymongo
