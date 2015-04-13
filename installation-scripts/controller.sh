@@ -343,7 +343,6 @@ verbose=True
 ec2_private_dns_show_ip=True
 api_paste_config=/etc/nova/api-paste.ini
 enabled_apis=ec2,osapi_compute,metadata
-connection = mysql://novaUser:$novadb@$mgtip/nova
 rpc_backend = rabbit
 rabbit_host = $mgtip
 rabbit_userid = openstack
@@ -352,6 +351,9 @@ auth_strategy = keystone
 my_ip = $mgtip
 vncserver_listen = $mgtip
 vncserver_proxyclient_address = $mgtip
+
+[database]
+connection = mysql://novaUser:$novadb@$mgtip/nova
 
 [keystone_authtoken]
 auth_uri = http://$mgtip:5000/v2.0
@@ -367,6 +369,9 @@ host = $glanceip
 service_metadata_proxy = True
 metadata_proxy_shared_secret = ${sharedsecret}
 EOF
+
+# Sync nova database
+su -s /bin/sh -c "nova-manage db sync" nova
 
 ## Restart nova services
 for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
@@ -747,9 +752,4 @@ if [ -z "$silent" ]; then
 
     echo ""
     echo "For using nova commands you need to source /root/.novarc first."
-
-    echo ""
-    echo "Run the following commands in order to fix nova's database"
-    echo 'su -s /bin/sh -c "nova-manage db sync" nova'
-    echo 'for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done'
 fi
