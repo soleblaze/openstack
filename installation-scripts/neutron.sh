@@ -10,9 +10,6 @@ tunip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 echo -n "Input External Interface: "
 read extiface
 
-echo -n "Input External Interface VLAN Range If Used: "
-read vlanrange
-
 if [ -z "$mgtip" ]; then
     echo -n "Input Controller IP [$localip]: "
     read mgtip
@@ -116,7 +113,6 @@ mechanism_drivers = openvswitch
 flat_networks = external
 
 [ml2_type_vlan]
-#network_vlan_ranges=external:1:100
 
 [ml2_type_gre]
 tunnel_id_ranges = 1:1000
@@ -136,11 +132,6 @@ bridge_mappings = external:br-ex
 [agent]
 tunnel_types = gre
 EOF
-
-if [ "$vlanrange" ]; then
-    sed "s|#network_vlan_ranges.*|network_vlan_ranges=external:${vlanrange}|" \
-/etc/neutron/plugins/ml2/ml2_conf.ini
-fi
 
 ## Setup /etc/neutron/l3_agent.ini
 cat > /etc/neutron/l3_agent.ini << EOF
