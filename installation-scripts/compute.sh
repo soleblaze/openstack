@@ -79,6 +79,12 @@ if [ -z "$KEYSTONE_REGION" ]; then
     KEYSTONE_REGION=RegionOne
 fi
 
+if [ -z "$neutronvlan" ]; then
+    echo -n "Enter VLAN range if using (otherwise press enter): "
+    read neutronvlan
+fi
+
+
 # Grab IP address of hte local management interface
 localip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
@@ -220,6 +226,11 @@ enable_tunneling = True
 [agent]
 tunnel_types = gre
 EOF
+
+if [ "$neutronvlan" ]; then
+    sed -i -e 's|^type_drivers = flat,gre|type_drivers = flat,gre,vlan|' /etc/neutron/plugins/ml2/ml2_conf.ini
+    sed -i -e "s|\[ml2_type_vlan\]|[ml2_type_vlan]\nnetwork_vlan_ranges = external:$neutronvlan|" /etc/neutron/plugins/ml2/ml2_conf.ini
+fi 
 
 # Restart networking
 service openvswitch-switch restart
