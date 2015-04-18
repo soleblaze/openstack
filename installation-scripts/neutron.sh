@@ -45,6 +45,12 @@ if [ -z "$rabbitpw" ]; then
     read rabbitpw
 fi
 
+if [ -z "$neutronvlan" ]; then
+    echo -n "Enter VLAN range if using (otherwise press enter): "
+    read neutronvlan
+fi
+
+
 # Add repos for juno if they don't already exist
 if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
     apt-get install -y ubuntu-cloud-keyring
@@ -168,6 +174,12 @@ admin_password = ${neutronuserpass}
 nova_metadata_ip = ${mgtip}
 metadata_proxy_shared_secret = ${sharedsecret}
 EOF
+
+if [ "$neutronvlan" ]; then
+    sed -i -e 's|^type_drivers = flat,gre|type_drivers = flat,gre,vlan|' /etc/neutron/plugins/ml2/ml2_conf.ini
+    sed -i -e "s|\[ml2_type_vlan\]|[ml2_type_vlan]\nnetwork_vlan_ranges = external:$neutronvlan|" /etc/neutron/plugins/ml2/ml2_conf.ini
+    echo 'enable_isolated_metadata = True' >> /etc/neutron/dhcp_agent.ini
+fi 
 
 ## Configure external bridge
 service openvswitch-switch restart
