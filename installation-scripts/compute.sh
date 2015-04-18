@@ -189,7 +189,7 @@ auth_uri = http://${controllerip}:5000/v2.0
 identity_uri = http://${controllerip}:35357
 admin_tenant_name = service
 admin_user = neutron
-admin_password = $neutronuser
+admin_password = ${neutronuserpass}
 
 [database]
 
