@@ -58,6 +58,11 @@ if [ -z "$neutronip" ]; then
     fi
 fi
 
+if [ -z "$neutronvlan" ]; then
+    echo -n "Enter VLAN range if using (otherwise press enter): "
+    read neutronvlan
+fi
+
 # Generate Random passwords for database accounts
 if [ -z "$keystonedb" ]; then
     keystonedb=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
@@ -443,6 +448,12 @@ enable_security_group = True
 enable_ipset = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 EOF
+
+if [ "$neutronvlan" ]; then
+    sed -i -e 's|^type_drivers = flat,gre|type_drivers = flat,gre,vlan|' /etc/neutron/plugins/ml2/ml2_conf.ini
+    sed -i -e "s|\[ml2_type_vlan\]|[ml2_type_vlan]\nnetwork_vlan_ranges = external:$neutronvlan|" /etc/neutron/plugins/ml2/ml2_conf.ini
+fi 
+
 
 # Populate database
 su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
