@@ -731,6 +731,7 @@ if [ -z "$silent" ]; then
     echo "export neutronuserpass=$neutronuser"
     echo "export neutrondbpass=$neutrondb"
     echo "export sharedsecret=$sharedsecret"
+    echo "export rabbitpw=$rabbitpw"
     echo ""
 
     echo ""
