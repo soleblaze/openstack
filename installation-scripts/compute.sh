@@ -206,11 +206,11 @@ tenant_network_types = gre
 mechanism_drivers = openvswitch
 
 [ml2_type_flat]
-tunnel_id_ranges = 1:1000
 
 [ml2_type_vlan]
 
 [ml2_type_gre]
+tunnel_id_ranges = 1:1000
 
 [ml2_type_vxlan]
 
@@ -229,7 +229,7 @@ EOF
 
 if [ "$neutronvlan" ]; then
     sed -i -e 's|^type_drivers = flat,gre|type_drivers = flat,gre,vlan|' /etc/neutron/plugins/ml2/ml2_conf.ini
-    sed -i -e "s|\[ml2_type_vlan\]|[ml2_type_vlan]\nnetwork_vlan_ranges = external:$neutronvlan|" /etc/neutron/plugins/ml2/ml2_conf.ini
+#    sed -i -e "s|\[ml2_type_vlan\]|[ml2_type_vlan]\nnetwork_vlan_ranges = external:$neutronvlan|" /etc/neutron/plugins/ml2/ml2_conf.ini
 fi 
 
 # Restart networking
