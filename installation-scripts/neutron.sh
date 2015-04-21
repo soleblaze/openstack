@@ -5,7 +5,7 @@ localip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
 echo -n "Input Tunnel Network Interface: "
 read tuniface
-tunip=$(ip addr show $mgtiface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
+tunip=$(ip addr show $tuniface | awk '/inet\ / { print $2 }' | cut -d"/" -f1)
 
 echo -n "Input External Interface: "
 read extiface
