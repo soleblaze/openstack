@@ -25,11 +25,6 @@ if [ -z "$glanceip" ]; then
     read glanceip
 fi
 
-if [ -z "$neutronip" ]; then
-    echo -n "Input neutron Server IP: "
-    read neutronip
-fi
-
 if [ -z "$neutronuserpass" ]; then
     echo -n "Input the neutron User's Keystone Password: "
     read neutronuserpass
