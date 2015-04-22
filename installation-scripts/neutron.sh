@@ -179,6 +179,7 @@ if [ "$neutronvlan" ]; then
     sed -i -e 's|^type_drivers = flat,gre|type_drivers = flat,gre,vlan|' /etc/neutron/plugins/ml2/ml2_conf.ini
     sed -i -e "s|\[ml2_type_vlan\]|[ml2_type_vlan]\nnetwork_vlan_ranges = external:$neutronvlan|" /etc/neutron/plugins/ml2/ml2_conf.ini
     echo 'enable_isolated_metadata = True' >> /etc/neutron/dhcp_agent.ini
+    sed -i -e 's|external_network_bridge = br-ex|external_network_bridge =|' /etc/neutron/l3_agent.ini  
 fi 
 
 ## Configure external bridge
