@@ -41,7 +41,10 @@ fi
 
 
 # Install Cinder
-apt-get install -y cinder-volume python-mysqldb
+apt-get install -y cinder-volume python-mysqldb qemu lvm2
+
+# Set up LVM filter to prevent performance issues relating to cinder lvms
+sed -i -e 's|filter = \[ \"a\/.*\/" \]|filter = [ "a/sda/", "a/sdb/", "r/.*/"]|' /etc/lvm/lvm.conf
 
 cat > /etc/cinder/cinder.conf << EOF
 [DEFAULT]
@@ -56,22 +59,37 @@ volumes_dir = /var/lib/cinder/volumes
 control_exchange = cinder
 notification_driver = messagingv2
 rpc_backend = rabbit
-rabbit_userid = openstack
-rabbit_host = ${mgtip}
-rabbit_password = ${rabbitpw}
 auth_strategy = keystone
 my_ip = ${cindermgtip}
 glance_host = ${mgtip}
+enabled_backends = lvm
+
+[oslo_messaging_rabbit]
+rabbit_host = ${mgtip}
+rabbit_userid = openstack
+rabbit_password = ${rabbitpw}
+
+[oslo_concurrency]
+lock_path = /var/lock/cinder
 
 [database]
 connection = mysql://cinderUser:${cinderdbpass}@${mgtip}/cinder
 
 [keystone_authtoken]
-auth_uri = http://${mgtip}:5000/v2.0
-identity_uri = http://${mgtip}:35357
-admin_tenant_name = service
-admin_user = cinder
-admin_password = ${cinderuserpass}
+auth_uri = http://${mgtip}:5000
+auth_url = http://${mgtip}:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = cinder
+password = ${cinderuserpass}
+
+[lvm]
+volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver
+volume_group = cinder-volumes
+iscsi_protocol = iscsi
+iscsi_helper = tgtadm
 EOF
 
 # Restart Services
@@ -80,5 +98,3 @@ service cinder-volume restart
 
 rm -f /var/lib/cinder/cinder.sqlite
 
-# Set up LVM filter to prevent performance issues relating to cinder lvms
-sed -i -e 's|filter = \[ \"a\/.*\/" \]|filter = [ "a/sda/", "a/sdb/", "r/.*/"]|' /etc/lvm/lvm.conf
