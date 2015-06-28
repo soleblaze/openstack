@@ -394,8 +394,6 @@ admin_auth_url = http://${mgtip}:35357/v2.0
 admin_tenant_name = service
 admin_username = neutron
 admin_password = ${neutronuser}
-#service_metadata_proxy = True
-#metadata_proxy_shared_secret = ${sharedsecret}
 EOF
 
 # Sync nova database
@@ -488,7 +486,6 @@ firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewal
 EOF
 
 if [ "$neutronvlan" ]; then
-    sed -i -e 's|^type_drivers = flat,gre|type_drivers = flat,gre,vlan|' /etc/neutron/plugins/ml2/ml2_conf.ini
     sed -i -e "s|\[ml2_type_vlan\]|[ml2_type_vlan]\nnetwork_vlan_ranges = external:$neutronvlan|" /etc/neutron/plugins/ml2/ml2_conf.ini
 fi 
 
