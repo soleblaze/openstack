@@ -280,42 +280,42 @@ get_id () {
 sleep 5
 
 ## Tenants
-ADMIN_TENANT=$(get_id keystone tenant-create --name=admin)
-SERVICE_TENANT=$(get_id keystone tenant-create --name=service)
+#ADMIN_TENANT=$(get_id keystone tenant-create --name=admin)
+#SERVICE_TENANT=$(get_id keystone tenant-create --name=service)
 
 ## Admin User
-ADMIN_USER=$(get_id keystone user-create --name=admin --pass="$ADMIN_PASSWORD" --email="${ADMIN_EMAIL}")
+#ADMIN_USER=$(get_id keystone user-create --name=admin --pass="$ADMIN_PASSWORD" --email="${ADMIN_EMAIL}")
 
 ## Roles
-ADMIN_ROLE=$(get_id keystone role-create --name=admin)
-KEYSTONEADMIN_ROLE=$(get_id keystone role-create --name=KeystoneAdmin)
-KEYSTONESERVICE_ROLE=$(get_id keystone role-create --name=KeystoneServiceAdmin)
+#ADMIN_ROLE=$(get_id keystone role-create --name=admin)
+#KEYSTONEADMIN_ROLE=$(get_id keystone role-create --name=KeystoneAdmin)
+#KEYSTONESERVICE_ROLE=$(get_id keystone role-create --name=KeystoneServiceAdmin)
 
 ## Add Roles to Users in Tenants
-keystone user-role-add --user-id $ADMIN_USER --role-id $ADMIN_ROLE --tenant-id $ADMIN_TENANT
-keystone user-role-add --user-id $ADMIN_USER --role-id $KEYSTONEADMIN_ROLE --tenant-id $ADMIN_TENANT
-keystone user-role-add --user-id $ADMIN_USER --role-id $KEYSTONESERVICE_ROLE --tenant-id $ADMIN_TENANT
+#keystone user-role-add --user-id $ADMIN_USER --role-id $ADMIN_ROLE --tenant-id $ADMIN_TENANT
+#keystone user-role-add --user-id $ADMIN_USER --role-id $KEYSTONEADMIN_ROLE --tenant-id $ADMIN_TENANT
+#keystone user-role-add --user-id $ADMIN_USER --role-id $KEYSTONESERVICE_ROLE --tenant-id $ADMIN_TENANT
 
 ## The Member role is used by Horizon and Swift
-MEMBER_ROLE=$(get_id keystone role-create --name=Member)
+#MEMBER_ROLE=$(get_id keystone role-create --name=Member)
 
 ## Configure service users/roles
-NOVA_USER=$(get_id keystone user-create --name=nova --pass="$novauser" --tenant-id $SERVICE_TENANT --email=nova@domain.com)
-keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NOVA_USER --role-id $ADMIN_ROLE
+#NOVA_USER=$(get_id keystone user-create --name=nova --pass="$novauser" --tenant-id $SERVICE_TENANT --email=nova@domain.com)
+#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NOVA_USER --role-id $ADMIN_ROLE
 
-GLANCE_USER=$(get_id keystone user-create --name=glance --pass="$glanceuser" --tenant-id $SERVICE_TENANT --email=glance@domain.com)
-keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $GLANCE_USER --role-id $ADMIN_ROLE
+#GLANCE_USER=$(get_id keystone user-create --name=glance --pass="$glanceuser" --tenant-id $SERVICE_TENANT --email=glance@domain.com)
+#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $GLANCE_USER --role-id $ADMIN_ROLE
 
-NEUTRON_USER=$(get_id keystone user-create --name=neutron --pass="$neutronuser" --tenant-id $SERVICE_TENANT --email=neutron@domain.com)
-keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NEUTRON_USER --role-id $ADMIN_ROLE
+#NEUTRON_USER=$(get_id keystone user-create --name=neutron --pass="$neutronuser" --tenant-id $SERVICE_TENANT --email=neutron@domain.com)
+#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NEUTRON_USER --role-id $ADMIN_ROLE
 
-CINDER_USER=$(get_id keystone user-create --name=cinder --pass="$cinderuserpass" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
-keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role-id $ADMIN_ROLE
+#CINDER_USER=$(get_id keystone user-create --name=cinder --pass="$cinderuserpass" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
+#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role-id $ADMIN_ROLE
 
-HEAT_USER=$(get_id keystone user-create --name=heat --pass="$heatuser" --tenant-id $SERVICE_TENANT --email=heat@domain.com)
-keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $HEAT_USER --role-id $ADMIN_ROLE
-CEILOMETER_USER=$(get_id keystone user-create --name=ceilometer --pass="$ceilometeruser" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
-keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CEILOMETER_USER --role-id $ADMIN_ROLE
+#HEAT_USER=$(get_id keystone user-create --name=heat --pass="$heatuser" --tenant-id $SERVICE_TENANT --email=heat@domain.com)
+#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $HEAT_USER --role-id $ADMIN_ROLE
+#CEILOMETER_USER=$(get_id keystone user-create --name=ceilometer --pass="$ceilometeruser" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
+#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CEILOMETER_USER --role-id $ADMIN_ROLE
 
 # Setup Endpoints for Openstack
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_endpoints_basic.sh
@@ -341,38 +341,37 @@ keystone service-create --name ceilometer --type metering --description 'Telemet
 create_endpoint () {
   case $1 in
     compute)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s'
     ;;
     volume)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s'
     ;;
     volumev2)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s'
     ;;
     image)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$glanceip"':9292/v2' --adminurl 'http://'"$glanceip"':9292/v2' --internalurl 'http://'"$glanceip"':9292/v2'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$glanceip"':9292/v2' --adminurl 'http://'"$glanceip"':9292/v2' --internalurl 'http://'"$glanceip"':9292/v2'
     ;;
     identity)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':5000/v2.0' --adminurl 'http://'"$mgtip"':35357/v2.0' --internalurl 'http://'"$mgtip"':5000/v2.0'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':5000/v2.0' --adminurl 'http://'"$mgtip"':35357/v2.0' --internalurl 'http://'"$mgtip"':5000/v2.0'
     ;;
     orchestration)
-        keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s'
     ;;
     cloudformation)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':8000/v1' --adminurl 'http://'"$mgtip"'8000/v1' --internalurl 'http://'"$mgtip"':800/v1'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8000/v1' --adminurl 'http://'"$mgtip"'8000/v1' --internalurl 'http://'"$mgtip"':800/v1'
     ;;
     metering)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':8777' --adminurl 'http://'"$mgtip"':8777' --internalurl 'http://'"$mgtip"':8777'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8777' --adminurl 'http://'"$mgtip"':8777' --internalurl 'http://'"$mgtip"':8777'
     ;;
     network)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$mgtip"':9696/' --adminurl 'http://'"$mgtip"':9696/' --internalurl 'http://'"$mgtip"':9696/'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':9696/' --adminurl 'http://'"$mgtip"':9696/' --internalurl 'http://'"$mgtip"':9696/'
     ;;
   esac
 }
 
 for i in compute volume volumev2 image orchestration cloudformation metering identity network; do
-  id=`mysql -h $mgtip -u "$MYSQL_USER" -p"$keystonedb" "$MYSQL_DATABASE" -ss -e "SELECT id FROM service WHERE type='"$i"';"` || exit 1
-  create_endpoint $i $id
+  create_endpoint $i
 done
 
 # Create credentials file 
