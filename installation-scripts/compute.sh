@@ -156,12 +156,13 @@ EOF
 
 # Setup sysctl
 echo 'net.ipv4.conf.all.rp_filter=0
-net.ipv4.conf.default.rp_filter=0' > /etc/sysctl.d/20-ipforward.conf
+net.ipv4.conf.default.rp_filter=0
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-ip6tables=1' > /etc/sysctl.d/20-ipforward.conf
 sysctl -p
 
 # Install Networking Components
 apt-get install -y neutron-plugin-ml2 neutron-plugin-openvswitch-agent
-
 
 ## Setup /etc/neutron/neutron.conf
 cp /etc/neutron/neutron.conf /root/neutron.bak
@@ -170,12 +171,14 @@ cat > /etc/neutron/neutron.conf << EOF
 lock_path = \$state_path/lock
 auth_strategy = keystone
 rpc_backend = rabbit
-rabbit_host=${controllerip}
-rabbit_userid=openstack
-rabbit_password=${rabbitpw}
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = True
+
+[oslo_messaging_rabbit]
+rabbit_host = ${controllerip}
+rabbit_userid =o penstack
+rabbit_password = ${rabbitpw}
 
 [matchmaker_redis]
 
@@ -185,12 +188,16 @@ allow_overlapping_ips = True
 
 [agent]
 root_helper = sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
+
 [keystone_authtoken]
-auth_uri = http://${controllerip}:5000/v2.0
-identity_uri = http://${controllerip}:35357
-admin_tenant_name = service
-admin_user = neutron
-admin_password = ${neutronuserpass}
+auth_uri = http://${controllerip}:5000
+auth_url = http://${controllerip}:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = neutron
+password = ${neutronuserpass}
 
 [database]
 
@@ -202,7 +209,7 @@ EOF
 # Setup /etc/neutron/plugins/ml2/ml2_conf.ini
 cat > /etc/neutron/plugins/ml2/ml2_conf.ini << EOF
 [ml2]
-type_drivers = flat,gre
+type_drivers = flat,vlan,gre,vxlan
 tenant_network_types = gre
 mechanism_drivers = openvswitch
 
@@ -222,16 +229,14 @@ firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewal
 
 [ovs]
 local_ip = ${tunip}
-enable_tunneling = True
 
 [agent]
 tunnel_types = gre
 EOF
 
-if [ "$neutronvlan" ]; then
-    sed -i -e 's|^type_drivers = flat,gre|type_drivers = flat,gre,vlan|' /etc/neutron/plugins/ml2/ml2_conf.ini
+#if [ "$neutronvlan" ]; then
 #    sed -i -e "s|\[ml2_type_vlan\]|[ml2_type_vlan]\nnetwork_vlan_ranges = external:$neutronvlan|" /etc/neutron/plugins/ml2/ml2_conf.ini
-fi 
+#fi 
 
 # Restart networking
 service openvswitch-switch restart
