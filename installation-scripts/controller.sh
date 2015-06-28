@@ -99,6 +99,9 @@ fi
 if [ -z "$heatuser" ]; then
     heatuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
+if [ -z "$heatdomainpass" ]; then
+    heatdomainpass=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
+fi
 if [ -z "$neutronuser" ]; then
     neutronuser=$(cat /dev/urandom| tr -dc 'a-zA-Z0-9'|fold -w 20 | head -n1)
 fi
@@ -579,11 +582,16 @@ cat > /etc/heat/heat.conf << EOF
 [DEFAULT]
 log_dir=/var/log/heat
 rpc_backend = rabbit
-rabbit_userid = openstack
-rabbit_host = ${mgtip}
-rabbit_password = ${rabbitpw}
 heat_metadata_server_url = http://${mgtip}:8000
 heat_waitcondition_server_url = http://${mgtip}:8000/v1/waitcondition
+stack_domain_admin = heat_domain_admin
+stack_domain_admin_password = ${heatdomainpass}
+stack_user_domain_name = heat_user_domain
+
+[oslo_messaging_rabbit]
+rabbit_host = ${mgtip}
+rabbit_userid = openstack
+rabbit_password = ${rabbitpw}
 
 [auth_password]
 
@@ -619,7 +627,6 @@ auth_uri = http://controller:5000/v2.0
 
 [heat_api_cloudwatch]
 
-
 [keystone_authtoken]
 auth_uri = http://${mgtip}:5000/v2.0
 identity_uri = http://${mgtip}:35357
@@ -637,6 +644,12 @@ admin_password = ${heatuser}
 
 [revision]
 EOF
+
+# Setup heat domain
+heat-keystone-setup-domain \
+  --stack-user-domain-name heat_user_domain \
+  --stack-domain-admin heat_domain_admin \
+  --stack-domain-admin-password ${heatdomainpass}
 
 # Populate heat database
 su -s /bin/sh -c "heat-manage db_sync" heat
