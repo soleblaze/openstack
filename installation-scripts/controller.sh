@@ -394,6 +394,8 @@ admin_auth_url = http://${mgtip}:35357/v2.0
 admin_tenant_name = service
 admin_username = neutron
 admin_password = ${neutronuser}
+service_metadata_proxy = True
+metadata_proxy_shared_secret = ${sharedsecret}
 EOF
 
 # Sync nova database
