@@ -264,79 +264,28 @@ rm -f /var/lib/keystone/keystone.db
 echo '@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-tokenflush.log 2>&1' \
 >> /var/spool/cron/crontabs/keystone
 
-# Setup Keystones basic configuration
-# Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_basic.sh
+# Setup Keystone
 
 ## Set Variables for keystone
 export OS_SERVICE_TOKEN=${keystonetoken}
 export OS_SERVICE_ENDPOINT=http://${mgtip}:35357/v2.0
 
-## Create a function to grab the id
-get_id () {
-    echo `$@ | awk '/ id / { print $4 }'`
-}
-
 ## Pause for 5 seconds so keystone has a chance to completely start
 sleep 5
 
-# Setup Endpoints for Openstack
-# Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_endpoints_basic.sh
-
-export MYSQL_USER=keystoneUser
-export MYSQL_DATABASE=keystone
 if [ -z "$KEYSTONE_REGION" ]; then
     export KEYSTONE_REGION=RegionOne
 fi
 
-## Create Services
-keystone service-create --name nova --type compute --description 'OpenStack Compute'
-keystone service-create --name cinder --type volume --description 'OpenStack Block Storage'
-keystone service-create --name cinderv2 --type volumev2 --description 'OpenStack Block Storage'
-keystone service-create --name glance --type image --description 'OpenStack Image Service'
-keystone service-create --name keystone --type identity --description 'OpenStack Identity'
-keystone service-create --name neutron --type network --description 'OpenStack Networking'
-keystone service-create --name heat --type orchestration --description 'Orchestration'
-keystone service-create --name heat-cfn --type cloudformation --description 'Orchestration'
-keystone service-create --name ceilometer --type metering --description 'Telemetry'
+# Setup Token
+export OS_TOKEN=${keystonetoken}
+export OS_URL=http://${mgtip}:35357/v2.0
 
-## Create Endpoints
-create_endpoint () {
-  case $1 in
-    compute)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s'
-    ;;
-    volume)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v1/%(tenant_id)s'
-    ;;
-    volumev2)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s'
-    ;;
-    image)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$glanceip"':9292' --adminurl 'http://'"$glanceip"':9292' --internalurl 'http://'"$glanceip"':9292'
-    ;;
-    identity)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':5000/v2.0' --adminurl 'http://'"$mgtip"':35357/v2.0' --internalurl 'http://'"$mgtip"':5000/v2.0'
-    ;;
-    orchestration)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s'
-    ;;
-    cloudformation)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8000/v1' --adminurl 'http://'"$mgtip"'8000/v1' --internalurl 'http://'"$mgtip"':800/v1'
-    ;;
-    metering)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8777' --adminurl 'http://'"$mgtip"':8777' --internalurl 'http://'"$mgtip"':8777'
-    ;;
-    network)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':9696/' --adminurl 'http://'"$mgtip"':9696/' --internalurl 'http://'"$mgtip"':9696/'
-    ;;
-  esac
-}
+# Create identity service
+openstack service create --name keystone --description "OpenStack Identity" identity
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':5000/v2.0' --adminurl 'http://'"$mgtip"':35357/v2.0' --internalurl 'http://'"$mgtip"':5000/v2.0' identity
 
-for i in compute volume volumev2 image orchestration cloudformation metering identity network; do
-  create_endpoint $i
-done
-
-# Create projects and users
+# Create default admin projects and roles
 openstack project create --description "Admin Project" admin
 openstack user create --password "$ADMIN_PASSWORD"  admin
 openstack role create admin
@@ -347,26 +296,44 @@ openstack role create user
 # Glance User
 openstack user create --password "$glanceuser" glance
 openstack role add --project service --user glance admin
-openstack service create --name glance \
---description "OpenStack Image service" image
+openstack service create --name glance --description "OpenStack Image service" image
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$glanceip"':9292' --adminurl 'http://'"$glanceip"':9292' --internalurl 'http://'"$glanceip"':9292' image
+
+# Nova User
+openstack user create --password "$novauser" nova
+openstack role add --project service --user nova admin
+openstack service create --name nova --description "OpenStack Compute" compute
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8774/v2/%(tenant_id)s' compute
+
+# Neutron User
+openstack user create --password "$neutronuser" neutron
+openstack role add --project service --user neutron admin
+openstack service create --name neutron --description "OpenStack Networking" network
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':9696/' --adminurl 'http://'"$mgtip"':9696/' --internalurl 'http://'"$mgtip"':9696/' network
+
+# Cinder User
+openstack user create --password "$cinderuserpass" cinder
+openstack role add --project service --user cinder admin
+openstack service create --name cinder --description "OpenStack Block Storage" volume
+openstack service create --name cinderv2 --description "OpenStack Block Storage" volumev2
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' volume
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' volume2
 
 # Glance User
-openstack user create --password "$glanceuser" glance
-openstack role add --project service --user glance admin
-openstack service create --name glance \
---description "OpenStack Image service" image
+openstack user create --password "$heatuser" heat
+openstack role add --project service --user heat admin
+openstack role create heat_stack_owner
+openstack role create heat_stack_user
+openstack service create --name heat --description "Orchestration" orchestration
+openstack service create --name heat-cfn --description "Orchestration"  cloudformation
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' --adminurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' --internalurl 'http://'"$mgtip"':8004/v1/%(tenant_id)s' orchestration
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8000/v1' --adminurl 'http://'"$mgtip"'8000/v1' --internalurl 'http://'"$mgtip"':800/v1' cloudformation
 
-# Glance User
-openstack user create --password "$glanceuser" glance
-openstack role add --project service --user glance admin
-openstack service create --name glance \
---description "OpenStack Image service" image
-
-# Glance User
-openstack user create --password "$glanceuser" glance
-openstack role add --project service --user glance admin
-openstack service create --name glance \
---description "OpenStack Image service" image
+# Telemetry User
+openstack user create --password "$ceilometeruser" ceilometer
+openstack role add --project service --user ceilometer admin
+openstack service create --name ceilometer --description "Telemetry" metering
+openstack service create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8777' --adminurl 'http://'"$mgtip"':8777' --internalurl 'http://'"$mgtip"':8777' metering
 
 # Create credentials file 
 echo export OS_TENANT_NAME=admin > /root/.novarc
