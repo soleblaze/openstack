@@ -365,9 +365,6 @@ ec2_private_dns_show_ip=True
 api_paste_config=/etc/nova/api-paste.ini
 enabled_apis=ec2,osapi_compute,metadata
 rpc_backend = rabbit
-rabbit_host = $mgtip
-rabbit_userid = openstack
-rabbit_password = $rabbitpw
 auth_strategy = keystone
 my_ip = $mgtip
 vncserver_listen = $mgtip
@@ -376,6 +373,11 @@ network_api_class = nova.network.neutronv2.api.API
 security_group_api = neutron
 linuxnet_interface_driver = nova.network.linux_net.LinuxOVSInterfaceDriver
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
+
+[oslo_messaging_rabbit]
+rabbit_host = $mgtip
+rabbit_userid = openstack
+rabbit_password = $rabbitpw
 
 [database]
 connection = mysql://novaUser:$novadb@$mgtip/nova
@@ -424,12 +426,14 @@ service_plugins = router
 allow_overlapping_ips = True
 auth_strategy = keystone
 rpc_backend = rabbit
-rabbit_host=${mgtip}
-rabbit_userid=openstack
-rabbit_password=${rabbitpw}
 notify_nova_on_port_status_changes = True
 notify_nova_on_port_data_changes = True
 nova_url = http://${mgtip}:8774/v2
+
+[oslo_messaging_rabbit]
+rabbit_host=${mgtip}
+rabbit_userid=openstack
+rabbit_password=${rabbitpw}
 
 [nova]
 auth_url = http://${mgtip}:35357
