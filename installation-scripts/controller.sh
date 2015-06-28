@@ -694,10 +694,12 @@ cat > /etc/ceilometer/ceilometer.conf << EOF
 [DEFAULT]
 log_dir=/var/log/ceilometer
 rpc_backend = rabbit
-rabbit_userid = openstack
-rabbit_host = ${mgtip}
-rabbit_password = ${rabbitpw}
 auth_strategy = keystone
+
+[oslo_messaging_rabbit]
+rabbit_host = ${mgtip}
+rabbit_userid = openstack
+rabbit_password = ${rabbitpw}
 
 [alarm]
 
@@ -736,7 +738,7 @@ admin_password = ${ceilometeruser}
 [notification]
 
 [publisher]
-metering_secret = ${ceilometersecret}
+telemetry_secret = ${ceilometersecret}
 
 [publisher_notifier]
 
@@ -747,6 +749,8 @@ os_auth_url = http://${mgtip}:5000/v2.0
 os_username = ceilometer
 os_tenant_name = service
 os_password = ${ceilometeruser}
+os_endpoint_type = internalURL
+os_region_name = ${KEYSTONE_REGION}
 
 [service_types]
 
