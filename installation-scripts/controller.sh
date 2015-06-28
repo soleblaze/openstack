@@ -520,14 +520,23 @@ su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
 service neutron-server restart
 
 # Install Horizon
-apt-get install -y openstack-dashboard apache2 libapache2-mod-wsgi memcached python-memcache
+apt-get install openstack-dashboard
 
-# Disable offline compression 
-sed -i -e 's/COMPRESS_OFFLINE\ =\ True/COMPRESS_OFFLINE\ =\ False/' /etc/openstack-dashboard/local_settings.py
+# Update local_settings.py
+# TODO:
+#OPENSTACK_HOST = "controller"
+# ALLOWED_HOSTS = '*'
+# CACHES = {
+#   'default': {
+#       'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#       'LOCATION': '127.0.0.1:11211',
+#   }
+#}
+# OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
+# TIME_ZONE = "TIME_ZONE"
 
 # Restart apache2 and memcached
-service apache2 restart
-service memcached restart
+service apache2 reload
 
 # Install Cinder
 apt-get install -y cinder-api cinder-scheduler python-cinderclient
