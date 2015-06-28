@@ -188,9 +188,13 @@ service rabbitmq-server restart
 # Install ntp
 apt-get install -y ntp
 
-# Install keystone
-apt-get install -y keystone python-keystoneclient
+# Disable keystone service from starting after installation
+echo "manual" > /etc/init/keystone.override
 
+# Install keystone
+apt-get install keystone python-openstackclient apache2 libapache2-mod-wsgi memcached python-memcache
+
+# TODO: Update this to use memcache (memcache, token, revoke)
 # Setup keystone.conf
 sed -i -e "s|^#admin_token.*|admin_token=${keystonetoken}|" /etc/keystone/keystone.conf
 sed -i -e "s|^#provider.*|provider = keystone.token.providers.uuid.Provider|" /etc/keystone/keystone.conf
@@ -201,7 +205,56 @@ sed -i -e "s|^connection.*|connection\ =\ mysql://keystoneUser:${keystonedb}@${m
 
 # Sync and restart the keystone service
 su -s /bin/sh -c "keystone-manage db_sync" keystone
-service keystone restart
+
+#TODO: Setup apache2 for keystone
+sed -i -e 's/ServerName.*/ServerName\ controller/'  /etc/apache2/apache2.conf
+cat > /etc/apache2/sites-available/wsgi-keystone.conf << EOF
+Listen 5000
+Listen 35357
+
+<VirtualHost *:5000>
+    WSGIDaemonProcess keystone-public processes=5 threads=1 user=keystone display-name=%{GROUP}
+    WSGIProcessGroup keystone-public
+    WSGIScriptAlias / /var/www/cgi-bin/keystone/main
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%{cu}t %M"
+    </IfVersion>
+    LogLevel info
+    ErrorLog /var/log/apache2/keystone-error.log
+    CustomLog /var/log/apache2/keystone-access.log combined
+</VirtualHost>
+
+<VirtualHost *:35357>
+    WSGIDaemonProcess keystone-admin processes=5 threads=1 user=keystone display-name=%{GROUP}
+    WSGIProcessGroup keystone-admin
+    WSGIScriptAlias / /var/www/cgi-bin/keystone/admin
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%{cu}t %M"
+    </IfVersion>
+    LogLevel info
+    ErrorLog /var/log/apache2/keystone-error.log
+    CustomLog /var/log/apache2/keystone-access.log combined
+</VirtualHost>
+EOF
+
+# Enable Identity service virtual hosts
+ln -s /etc/apache2/sites-available/wsgi-keystone.conf /etc/apache2/sites-enabled
+
+# Setup WSGI componetns
+mkdir -p /var/www/cgi-bin/keystone
+curl http://git.openstack.org/cgit/openstack/keystone/plain/httpd/keystone.py?h=stable/kilo \
+| tee /var/www/cgi-bin/keystone/main /var/www/cgi-bin/keystone/admin
+
+# Fix ownership of keystone directory
+chown -R keystone:keystone /var/www/cgi-bin/keystone
+chmod 755 /var/www/cgi-bin/keystone/*
+
+# Restart Apache
+service apache2 restart
 
 # Delete uneeded sqlite file
 rm -f /var/lib/keystone/keystone.db
