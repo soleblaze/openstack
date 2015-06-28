@@ -50,11 +50,14 @@ rabbit_password = ${rabbitpw}
 connection = mysql://glanceUser:${glancedbpass}@${mgtip}/glance
 
 [keystone_authtoken]
-auth_uri = http://${mgtip}:5000/v2.0
-identity_uri = http://${mgtip}:35357
-admin_tenant_name = service
-admin_user = glance
-admin_password = ${glanceuserpass}
+auth_uri = http://${mgtip}:5000
+auth_url = http://${mgtip}:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = glance
+password = {glanceuserpass}
  
 [paste_deploy]
 flavor = keystone
@@ -77,11 +80,14 @@ rabbit_password = ${rabbitpw}
 connection = mysql://glanceUser:${glancedbpass}@${mgtip}/glance
 
 [keystone_authtoken]
-auth_uri = http://${mgtip}:5000/v2.0
-identity_uri = http://${mgtip}:35357
-admin_tenant_name = service
-admin_user = glance
-admin_password = ${glanceuserpass}
+auth_uri = http://${mgtip}:5000
+auth_url = http://${mgtip}:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = glance
+password = ${glanceuserpass}
  
 [paste_deploy]
 flavor = keystone
