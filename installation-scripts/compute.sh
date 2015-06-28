@@ -139,6 +139,9 @@ admin_password = $novauserpass
 [glance]
 host = $glanceip
 
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+
 [neutron]
 url = http://${controllerip}:9696
 auth_strategy = keystone
