@@ -279,44 +279,6 @@ get_id () {
 ## Pause for 5 seconds so keystone has a chance to completely start
 sleep 5
 
-## Tenants
-#ADMIN_TENANT=$(get_id keystone tenant-create --name=admin)
-#SERVICE_TENANT=$(get_id keystone tenant-create --name=service)
-
-## Admin User
-#ADMIN_USER=$(get_id keystone user-create --name=admin --pass="$ADMIN_PASSWORD" --email="${ADMIN_EMAIL}")
-
-## Roles
-#ADMIN_ROLE=$(get_id keystone role-create --name=admin)
-#KEYSTONEADMIN_ROLE=$(get_id keystone role-create --name=KeystoneAdmin)
-#KEYSTONESERVICE_ROLE=$(get_id keystone role-create --name=KeystoneServiceAdmin)
-
-## Add Roles to Users in Tenants
-#keystone user-role-add --user-id $ADMIN_USER --role-id $ADMIN_ROLE --tenant-id $ADMIN_TENANT
-#keystone user-role-add --user-id $ADMIN_USER --role-id $KEYSTONEADMIN_ROLE --tenant-id $ADMIN_TENANT
-#keystone user-role-add --user-id $ADMIN_USER --role-id $KEYSTONESERVICE_ROLE --tenant-id $ADMIN_TENANT
-
-## The Member role is used by Horizon and Swift
-#MEMBER_ROLE=$(get_id keystone role-create --name=Member)
-
-## Configure service users/roles
-#NOVA_USER=$(get_id keystone user-create --name=nova --pass="$novauser" --tenant-id $SERVICE_TENANT --email=nova@domain.com)
-#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NOVA_USER --role-id $ADMIN_ROLE
-
-#GLANCE_USER=$(get_id keystone user-create --name=glance --pass="$glanceuser" --tenant-id $SERVICE_TENANT --email=glance@domain.com)
-#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $GLANCE_USER --role-id $ADMIN_ROLE
-
-#NEUTRON_USER=$(get_id keystone user-create --name=neutron --pass="$neutronuser" --tenant-id $SERVICE_TENANT --email=neutron@domain.com)
-#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $NEUTRON_USER --role-id $ADMIN_ROLE
-
-#CINDER_USER=$(get_id keystone user-create --name=cinder --pass="$cinderuserpass" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
-#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role-id $ADMIN_ROLE
-
-#HEAT_USER=$(get_id keystone user-create --name=heat --pass="$heatuser" --tenant-id $SERVICE_TENANT --email=heat@domain.com)
-#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $HEAT_USER --role-id $ADMIN_ROLE
-#CEILOMETER_USER=$(get_id keystone user-create --name=ceilometer --pass="$ceilometeruser" --tenant-id $SERVICE_TENANT --email=cinder@domain.com)
-#keystone user-role-add --tenant-id $SERVICE_TENANT --user-id $CEILOMETER_USER --role-id $ADMIN_ROLE
-
 # Setup Endpoints for Openstack
 # Taken from https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide/blob/OVS_MultiNode/KeystoneScripts/keystone_endpoints_basic.sh
 
@@ -350,7 +312,7 @@ create_endpoint () {
     keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --adminurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s' --internalurl 'http://'"$cinderip"':8776/v2/%(tenant_id)s'
     ;;
     image)
-    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$glanceip"':9292/v2' --adminurl 'http://'"$glanceip"':9292/v2' --internalurl 'http://'"$glanceip"':9292/v2'
+    keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$glanceip"':9292' --adminurl 'http://'"$glanceip"':9292' --internalurl 'http://'"$glanceip"':9292'
     ;;
     identity)
     keystone endpoint-create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':5000/v2.0' --adminurl 'http://'"$mgtip"':35357/v2.0' --internalurl 'http://'"$mgtip"':5000/v2.0'
@@ -373,6 +335,38 @@ create_endpoint () {
 for i in compute volume volumev2 image orchestration cloudformation metering identity network; do
   create_endpoint $i
 done
+
+# Create projects and users
+openstack project create --description "Admin Project" admin
+openstack user create --password "$ADMIN_PASSWORD"  admin
+openstack role create admin
+openstack role add --project admin --user admin admin
+openstack project create --description "Service Project" service
+openstack role create user
+
+# Glance User
+openstack user create --password "$glanceuser" glance
+openstack role add --project service --user glance admin
+openstack service create --name glance \
+--description "OpenStack Image service" image
+
+# Glance User
+openstack user create --password "$glanceuser" glance
+openstack role add --project service --user glance admin
+openstack service create --name glance \
+--description "OpenStack Image service" image
+
+# Glance User
+openstack user create --password "$glanceuser" glance
+openstack role add --project service --user glance admin
+openstack service create --name glance \
+--description "OpenStack Image service" image
+
+# Glance User
+openstack user create --password "$glanceuser" glance
+openstack role add --project service --user glance admin
+openstack service create --name glance \
+--description "OpenStack Image service" image
 
 # Create credentials file 
 echo export OS_TENANT_NAME=admin > /root/.novarc
