@@ -647,9 +647,9 @@ EOF
 
 # Setup heat domain
 heat-keystone-setup-domain \
-  --stack-user-domain-name heat_user_domain \
-  --stack-domain-admin heat_domain_admin \
-  --stack-domain-admin-password ${heatdomainpass}
+--stack-user-domain-name heat_user_domain \
+--stack-domain-admin heat_domain_admin \
+--stack-domain-admin-password ${heatdomainpass}
 
 # Populate heat database
 su -s /bin/sh -c "heat-manage db_sync" heat
