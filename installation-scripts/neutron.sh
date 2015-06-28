@@ -51,10 +51,10 @@ if [ -z "$neutronvlan" ]; then
 fi
 
 
-# Add repos for juno if they don't already exist
-if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
+# Add repos for kilo if they don't already exist
+if [ ! -e /etc/apt/sources.list.d/cloudarchive-kilo.list ]; then
     apt-get install -y ubuntu-cloud-keyring
-    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
+    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo main >> /etc/apt/sources.list.d/cloudarchive-kilo.list
     apt-get update
 fi
 
@@ -63,7 +63,7 @@ apt-get install -y ntp
 
 # Install neutron
 apt-get install -y neutron-plugin-ml2 neutron-plugin-openvswitch-agent \
-neutron-l3-agent neutron-dhcp-agent
+neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
 
 # Setup sysctl for ip forwarding
 echo 'net.ipv4.ip_forward=1
@@ -81,9 +81,11 @@ service_plugins = router
 allow_overlapping_ips = True
 auth_strategy = keystone
 rpc_backend = rabbit
-rabbit_host=${mgtip}
-rabbit_userid=openstack
-rabbit_password=${rabbitpw}
+
+[oslo_messaging_rabbit]
+rabbit_host = ${mgtip}
+rabbit_userid = openstack
+rabbit_password = ${rabbitpw}
 
 [matchmaker_redis]
 
@@ -95,11 +97,14 @@ rabbit_password=${rabbitpw}
 root_helper = sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
 
 [keystone_authtoken]
-auth_uri = http://${mgtip}:5000/v2.0
-identity_uri = http://${mgtip}:35357
-admin_tenant_name = service
-admin_user = neutron
-admin_password = $neutronuserpass
+auth_uri = http://${mgtip}:5000
+auth_url = http://${mgtip}:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = neutron
+password = $neutronuserpass
 
 [database]
 
