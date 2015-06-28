@@ -255,10 +255,12 @@ cat > /etc/ceilometer/ceilometer.conf << EOF
 [DEFAULT]
 log_dir=/var/log/ceilometer
 rpc_backend = rabbit
-rabbit_userid = openstack
-rabbit_host = ${controllerip}
-rabbit_password = ${rabbitpw}
 auth_strategy = keystone
+
+[oslo_messaging_rabbit]
+rabbit_host = ${controllerip}
+rabbit_userid = openstack
+rabbit_password = ${rabbitpw}
 
 [alarm]
 
@@ -296,7 +298,7 @@ admin_password = ${ceilometeruserpass}
 [notification]
 
 [publisher]
-metering_secret = ${ceilometersecret}
+telemetry_secret = ${ceilometersecret}
 
 [publisher_notifier]
 
