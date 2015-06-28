@@ -536,21 +536,29 @@ volumes_dir = /var/lib/cinder/volumes
 control_exchange = cinder
 notification_driver = messagingv2
 rpc_backend = rabbit
-rabbit_userid = openstack
-rabbit_host = ${mgtip}
-rabbit_password = ${rabbitpw}
 auth_strategy = keystone
 my_ip = ${mgtip}
+
+[oslo_messaging_rabbit]
+rabbit_host = ${mgtip}
+rabbit_userid = openstack
+rabbit_password = ${rabbitpw}
+
+[oslo_concurrency]
+lock_path = /var/lock/cinder
 
 [database]
 connection = mysql://cinderUser:${cinderdbpass}@${mgtip}/cinder
 
 [keystone_authtoken]
-auth_uri = http://${mgtip}:5000/v2.0
-identity_uri = http://${mgtip}:35357
-admin_tenant_name = service
-admin_user = cinder
-admin_password = ${cinderuserpass}
+auth_uri = http://${mgtip}:5000
+auth_url = http://${mgtip}:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = cinder
+password = ${cinderuserpass}
 EOF
 
 # Populate database
