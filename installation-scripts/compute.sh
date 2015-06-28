@@ -112,9 +112,6 @@ ec2_private_dns_show_ip=True
 api_paste_config=/etc/nova/api-paste.ini
 enabled_apis=ec2,osapi_compute,metadata
 rpc_backend = rabbit
-rabbit_host = $controllerip
-rabbit_userid = openstack
-rabbit_password = $rabbitpw
 auth_strategy = keystone
 my_ip = $localip
 vncserver_listen = 0.0.0.0
@@ -128,6 +125,11 @@ instance_usage_audit = True
 instance_usage_audit_period = hour
 notify_on_state_change = vm_and_task_state
 notification_driver = messagingv2
+
+[oslo_messaging_rabbit]
+rabbit_host = $controllerip
+rabbit_userid = openstack
+rabbit_password = $rabbitpw
 
 [keystone_authtoken]
 auth_uri = http://$controllerip:5000
