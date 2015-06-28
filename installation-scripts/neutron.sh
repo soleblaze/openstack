@@ -116,7 +116,7 @@ EOF
 ## Setup /etc/neutron/plugins/ml2/ml2_conf.ini
 cat > /etc/neutron/plugins/ml2/ml2_conf.ini << EOF
 [ml2]
-type_drivers = flat,gre
+type_drivers = flat,vlan,gre,vxlan
 tenant_network_types = gre
 mechanism_drivers = openvswitch
 
@@ -148,8 +148,7 @@ EOF
 cat > /etc/neutron/l3_agent.ini << EOF
 [DEFAULT]
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-use_namespaces = True
-external_network_bridge = br-ex
+external_network_bridge = 
 router_delete_namespaces = True
 EOF
 
@@ -159,7 +158,6 @@ cat > /etc/neutron/dhcp_agent.ini << EOF
 [DEFAULT]
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
 dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
-use_namespaces = True
 dhcp_delete_namespaces = True
 dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
 EOF
@@ -171,11 +169,15 @@ echo "dhcp-option-force=26,1454" > /etc/neutron/dnsmasq-neutron.conf
 ## Setup /etc/neutron/metadata_agent.ini
 cat > /etc/neutron/metadata_agent.ini << EOF
 [DEFAULT]
-auth_url = http://${mgtip}:5000/v2.0
-auth_region = ${KEYSTONE_REGION}
-admin_tenant_name = service
-admin_user = neutron
-admin_password = ${neutronuserpass}
+auth_uri = http://${mgtip}:5000
+auth_url = http://${mgtip}:35357
+auth_region = RegionOne
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = neutron
+password = ${neutronuserpass}
 nova_metadata_ip = ${mgtip}
 metadata_proxy_shared_secret = ${sharedsecret}
 EOF
