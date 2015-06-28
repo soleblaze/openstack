@@ -32,10 +32,10 @@ if [ -z "$rabbitpw" ]; then
     read rabbitpw
 fi
 
-# Add repos for juno if they don't already exist
-if [ ! -e /etc/apt/sources.list.d/cloudarchive-juno.list ]; then
+# Add repos for kilo if they don't already exist
+if [ ! -e /etc/apt/sources.list.d/cloudarchive-kilo.list ]; then
     apt-get install -y ubuntu-cloud-keyring
-    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main >> /etc/apt/sources.list.d/cloudarchive-juno.list
+    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo main >> /etc/apt/sources.list.d/cloudarchive-kilo.list
     apt-get update
 fi
 
