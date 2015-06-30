@@ -465,8 +465,7 @@ metadata_proxy_shared_secret = ${sharedsecret}
 EOF
 
 # Sync nova database
-su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
---config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+su -s /bin/sh -c "nova-manage db sync" nova
 
 ## Restart nova services
 for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
