@@ -264,7 +264,7 @@ EOF
 su -s /bin/sh -c "keystone-manage db_sync" keystone
 
 #Setup apache2 for keystone
-echo "ServerName controller" > /etc/apache2/apache2.conf
+echo "ServerName controller" >> /etc/apache2/apache2.conf
 
 cat > /etc/apache2/sites-available/wsgi-keystone.conf << EOF
 Listen 5000
