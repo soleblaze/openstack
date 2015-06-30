@@ -391,7 +391,7 @@ openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip
 openstack user create --password "$ceilometeruser" ceilometer
 openstack role add --project service --user ceilometer admin
 openstack service create --name ceilometer --description "Telemetry" metering
-openstack service create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8777' --adminurl 'http://'"$mgtip"':8777' --internalurl 'http://'"$mgtip"':8777' metering
+openstack endpoint create --region $KEYSTONE_REGION --publicurl 'http://'"$mgtip"':8777' --adminurl 'http://'"$mgtip"':8777' --internalurl 'http://'"$mgtip"':8777' metering
 
 # Create credentials file 
 echo export OS_TENANT_NAME=admin > /root/.novarc
