@@ -195,7 +195,7 @@ apt-get install -y ntp
 echo "manual" > /etc/init/keystone.override
 
 # Install keystone
-apt-get install keystone python-openstackclient apache2 libapache2-mod-wsgi memcached python-memcache
+apt-get install -y keystone python-openstackclient apache2 libapache2-mod-wsgi memcached python-memcache
 
 # Setup keystone.conf
 cat > /etc/keystone/keystone.conf << EOF
@@ -562,7 +562,7 @@ su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
 service neutron-server restart
 
 # Install Horizon
-apt-get install openstack-dashboard
+apt-get install -y openstack-dashboard
 
 # Update local_settings.py
 sed -i -e 's|^OPENSTACK_HOST.*|OPENSTACK_HOST = "controller"|' /etc/openstack-dashboard/local_settings.py
