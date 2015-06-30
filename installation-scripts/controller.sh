@@ -195,7 +195,7 @@ apt-get install -y ntp
 echo "manual" > /etc/init/keystone.override
 
 # Install keystone
-apt-get install -y keystone python-openstackclient apache2 libapache2-mod-wsgi memcached python-memcache
+apt-get install -y keystone python-openstackclient apache2 libapache2-mod-wsgi memcached python-memcache curl
 
 # Setup keystone.conf
 cat > /etc/keystone/keystone.conf << EOF
