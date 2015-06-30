@@ -434,15 +434,21 @@ rabbit_host = $mgtip
 rabbit_userid = openstack
 rabbit_password = $rabbitpw
 
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+
 [database]
 connection = mysql://novaUser:$novadb@$mgtip/nova
 
 [keystone_authtoken]
-auth_uri = http://$mgtip:5000/v2.0
-identity_uri = http://$mgtip:35357
-admin_tenant_name = service
-admin_user = nova
-admin_password = $novauser
+auth_uri = http://${mgtip}:5000
+auth_url = http://${mgtip}:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = nova
+password = $novauser
 
 [glance]
 host = $glanceip
