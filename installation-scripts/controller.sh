@@ -197,20 +197,75 @@ echo "manual" > /etc/init/keystone.override
 # Install keystone
 apt-get install keystone python-openstackclient apache2 libapache2-mod-wsgi memcached python-memcache
 
-# TODO: Update this to use memcache (memcache, token, revoke)
 # Setup keystone.conf
-sed -i -e "s|^#admin_token.*|admin_token=${keystonetoken}|" /etc/keystone/keystone.conf
-sed -i -e "s|^#provider.*|provider = keystone.token.providers.uuid.Provider|" /etc/keystone/keystone.conf
-sed -i -e "s|^#driver=keystone.token.persistence.backends.sql.Token|driver = keystone.token.persistence.backends.sql.Token|" /etc/keystone/keystone.conf
-sed -i -e "s|^#driver=keystone.contrib.revoke.backends.kvs.Revoke|driver = keystone.contrib.revoke.backends.sql.Revoke|" /etc/keystone/keystone.conf
-sed -i -e "s|^connection.*|connection\ =\ mysql://keystoneUser:${keystonedb}@${mgtip}/keystone|" /etc/keystone/keystone.conf
+cat > /etc/keystone/keystone.conf << EOF
+[DEFAULT]
+admin_token = ${keystonetoken}
+
+[assignment]
+
+[auth]
+
+[cache]
+
+[catalog]
+
+[credential]
+
+[database]
+connection = mysql://keystoneUser:${keystonedb}@${mgtip}/keystone
+
+[ec2]
+
+[endpoint_filter]
+
+[federation]
+
+[identity]
+
+[kvs]
+
+[ldap]
+
+[matchmaker_ring]
+
+[memcache]
+servers = localhost:11211
+
+[oauth1]
+
+[os_inherit]
+
+[paste_deploy]
+
+[policy]
+
+[revoke]
+driver = keystone.contrib.revoke.backends.sql.Revoke
+
+[signing]
+
+[ssl]
+
+[stats]
+
+[token]
+provider = keystone.token.providers.uuid.Provider
+driver = keystone.token.persistence.backends.memcache.Token
+
+[trust]
+
+[extra_headers]
+Distribution = Ubuntu
+EOF
 
 
 # Sync and restart the keystone service
 su -s /bin/sh -c "keystone-manage db_sync" keystone
 
-#TODO: Setup apache2 for keystone
-sed -i -e 's/ServerName.*/ServerName\ controller/'  /etc/apache2/apache2.conf
+#Setup apache2 for keystone
+echo "ServerName controller" > /etc/apache2/apache2.conf
+
 cat > /etc/apache2/sites-available/wsgi-keystone.conf << EOF
 Listen 5000
 Listen 35357
@@ -510,17 +565,8 @@ service neutron-server restart
 apt-get install openstack-dashboard
 
 # Update local_settings.py
-# TODO:
-#OPENSTACK_HOST = "controller"
-# ALLOWED_HOSTS = '*'
-# CACHES = {
-#   'default': {
-#       'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#       'LOCATION': '127.0.0.1:11211',
-#   }
-#}
-# OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
-# TIME_ZONE = "TIME_ZONE"
+sed -i -e 's|^OPENSTACK_HOST.*|OPENSTACK_HOST = "controller"|' /etc/openstack-dashboard/local_settings.py
+sed -i -e 's|^OPENSTACK_KEYSTONE_DEFAULT_ROLE.*|OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"|' /etc/openstack-dashboard/local_settings.py
 
 # Restart apache2 and memcached
 service apache2 reload
