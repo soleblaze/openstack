@@ -464,11 +464,11 @@ service_metadata_proxy = True
 metadata_proxy_shared_secret = ${sharedsecret}
 EOF
 
-# Sync nova database
-su -s /bin/sh -c "nova-manage db sync" nova
-
 ## Restart nova services
 for service in nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler; do service $service restart; done
+
+# Sync nova database
+su -s /bin/sh -c "nova-manage db sync" nova
 
 ## Delete unneeded sqlite file
 rm -f /var/lib/nova/nova.sqlite
