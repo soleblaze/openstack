@@ -1,6 +1,6 @@
-# Juno OpenStack Installation Scripts
+# Kilo OpenStack Installation Scripts
 
-These scripts are designed to deploy Juno OpenStack on Ubuntu 14.04.  They are for the initial installation of OpenStack.  They do not cover the creation of networks, projects, users, glance images, etc.  This will be done in the future in a how-to section.
+These scripts are designed to deploy Kilo OpenStack on Ubuntu 14.04.  They are for the initial installation of OpenStack.  They do not cover the creation of networks, projects, users, glance images, etc.  This will be done in the future in a how-to section.
   
 These scripts are heavily influenced by the Folsom and Grizzly documentation created by [mseknibilel][msknibilel].  
 You can find msknibilel's Grizzly install guide [here][grizzlyguide].
