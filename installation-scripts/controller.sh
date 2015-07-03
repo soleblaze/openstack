@@ -398,6 +398,7 @@ echo export OS_TENANT_NAME=admin > /root/.novarc
 echo export OS_USERNAME=admin >> /root/.novarc
 echo export OS_PASSWORD="$ADMIN_PASSWORD" >> /root/.novarc
 echo export OS_AUTH_URL="http://$mgtip:5000/v2.0/" >> /root/.novarc
+echo export OS_VOLUME_API_VERSION=2 >> /root/.novarc
 
 # Install nova
 apt-get install -y nova-api nova-cert nova-conductor nova-consoleauth \
