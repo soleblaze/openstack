@@ -57,7 +57,7 @@ project_domain_id = default
 user_domain_id = default
 project_name = service
 username = glance
-password = {glanceuserpass}
+password = ${glanceuserpass}
  
 [paste_deploy]
 flavor = keystone
