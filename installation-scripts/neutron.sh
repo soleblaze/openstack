@@ -75,7 +75,6 @@ sysctl -p
 
 cat > /etc/neutron/neutron.conf << EOF
 [DEFAULT]
-lock_path = \$state_path/lock
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = True
@@ -86,6 +85,9 @@ rpc_backend = rabbit
 rabbit_host = ${mgtip}
 rabbit_userid = openstack
 rabbit_password = ${rabbitpw}
+
+[oslo_concurrency]
+lock_path = $state_path/lock
 
 [matchmaker_redis]
 
