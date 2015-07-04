@@ -179,7 +179,7 @@ allow_overlapping_ips = True
 
 [oslo_messaging_rabbit]
 rabbit_host = ${controllerip}
-rabbit_userid =o penstack
+rabbit_userid = openstack
 rabbit_password = ${rabbitpw}
 
 [matchmaker_redis]
