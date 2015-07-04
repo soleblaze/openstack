@@ -150,6 +150,7 @@ EOF
 cat > /etc/neutron/l3_agent.ini << EOF
 [DEFAULT]
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+use_namespaces = True
 external_network_bridge = 
 router_delete_namespaces = True
 EOF
@@ -160,6 +161,7 @@ cat > /etc/neutron/dhcp_agent.ini << EOF
 [DEFAULT]
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
 dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
+use_namespaces = True
 dhcp_delete_namespaces = True
 dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
 EOF
