@@ -503,7 +503,7 @@ project_domain_id = default
 user_domain_id = default
 region_name = ${KEYSTONE_REGION}
 project_name = service
-username = nova
+user-name = nova
 password = ${novauser}
 
 [matchmaker_redis]
@@ -522,7 +522,7 @@ auth_plugin = password
 project_domain_id = default
 user_domain_id = default
 project_name = service
-username = neutron
+user-name = neutron
 password = $neutronuser
 
 [database]
