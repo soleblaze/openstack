@@ -481,7 +481,6 @@ apt-get install -y neutron-server neutron-plugin-ml2 python-neutronclient
 
 cat > /etc/neutron/neutron.conf << EOF
 [DEFAULT]
-lock_path = \$state_path/lock
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = True
@@ -495,6 +494,9 @@ nova_url = http://${mgtip}:8774/v2
 rabbit_host=${mgtip}
 rabbit_userid=openstack
 rabbit_password=${rabbitpw}
+
+[oslo_concurrency]
+lock_path = $state_path/lock
 
 [nova]
 auth_url = http://${mgtip}:35357
