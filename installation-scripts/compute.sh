@@ -170,7 +170,6 @@ apt-get install -y neutron-plugin-ml2 neutron-plugin-openvswitch-agent
 cp /etc/neutron/neutron.conf /root/neutron.bak
 cat > /etc/neutron/neutron.conf << EOF
 [DEFAULT]
-lock_path = \$state_path/lock
 auth_strategy = keystone
 rpc_backend = rabbit
 core_plugin = ml2
