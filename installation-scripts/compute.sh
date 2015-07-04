@@ -181,6 +181,9 @@ rabbit_host = ${controllerip}
 rabbit_userid = openstack
 rabbit_password = ${rabbitpw}
 
+[oslo_concurrency]
+lock_path = $state_path/lock
+
 [matchmaker_redis]
 
 [matchmaker_ring]
