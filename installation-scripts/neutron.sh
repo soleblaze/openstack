@@ -161,9 +161,9 @@ cat > /etc/neutron/dhcp_agent.ini << EOF
 [DEFAULT]
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
 dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
-use_namespaces = True
 dhcp_delete_namespaces = True
 dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
+dnsmasq_dns_servers = 8.8.8.8
 EOF
 
 # Set MTU to 1454 to work around GRE issues
