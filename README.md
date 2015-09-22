@@ -4,7 +4,7 @@ These scripts are designed to deploy Kilo OpenStack on Ubuntu 14.04.  They are f
 These scripts are heavily influenced by the Folsom and Grizzly documentation created by [mseknibilel][msknibilel].  
 You can find msknibilel's Grizzly install guide [here][grizzlyguide].
 
-**Note: These scripts do not currently setup SSL or HA **
+*Note: These scripts do not currently setup SSL or HA*
 
 ## controller.sh
 This script is designed to deploy the initial controller node.  This includes installing and setting up mysql, rabbitmq, keystone, nova (minus compute), and horizon.
